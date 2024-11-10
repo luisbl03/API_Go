@@ -5,9 +5,15 @@ type User struct {
 	password string
 }
 
-func getUsername(u *User) string {
+func GetUsername(u *User) string {
 	return u.username
 }
-func getPassword(u *User) string {
+func GetPassword(u *User) string {
 	return u.password
+}
+func SetUsername(u *User, username string) {
+	u.username = username
+}
+func SetPassword(u *User, password string) {
+	u.password = password
 }
