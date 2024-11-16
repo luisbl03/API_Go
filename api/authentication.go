@@ -2,13 +2,13 @@ package api
 
 import (
 	"github.com/luideiz/API_Go/models"
+	"github.com/luideiz/API_Go/repository"
 )
 
-func Login(username string, password string) bool {
+func Register(username string, password string) int {
 	var user models.User
 	models.SetUsername(&user, username)
 	models.SetPassword(&user, password)
-
-	
-	return true
+	status := repository.Add(user)
+	return status
 }
