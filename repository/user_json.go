@@ -23,6 +23,20 @@ func Add(user models.User) int {
 		return constants.ERROR
 	}
 	defer jsonFile.Close()
+	//miramos si el archivo esta vacio
+	info, _ := jsonFile.Stat()
+	if info.Size() == 0 {
+		usuarios = append(usuarios, user)
+		jsonData, err := json.MarshalIndent(usuarios, "", "  ")
+		if err != nil {
+			return constants.ERROR
+		}
+		err = os.WriteFile(FILE, jsonData, 0644)
+		if err != nil {
+			return constants.ERROR
+		}
+		return constants.OK
+	}
 	//miramos si el usuario ya existe
 	err = json.NewDecoder(jsonFile).Decode(&usuarios)
 	if err != nil {
@@ -38,7 +52,7 @@ func Add(user models.User) int {
 	if err != nil {
 		return constants.ERROR
 	}
-	err = os.WriteFile("users.json", jsonData, 0644)
+	err = os.WriteFile(FILE, jsonData, 0644)
 	if err != nil {
 		return constants.ERROR
 	}
