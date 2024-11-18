@@ -11,6 +11,7 @@ func main() {
 	api := gin.Default()
 	api.GET("/version", GetVersion) 
 	api.POST("/signup", Register)
+	api.GET("/login", Login)
 	api.Run(":8080")
 
 }
@@ -48,5 +49,34 @@ func Register(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{"status": "User created"})
-	
+}
+
+func Login(c *gin.Context) {
+	//miramos si esta el cuerpo del mensaje
+	if c.Request.Body == nil {
+		c.JSON(400, gin.H{"error": "No request body found"})
+		return
+	}
+	//miramos si el cuerpo del mensaje es un json con un username y un password
+	var login map[string]string //declaramos un map con dos claves string
+	err := c.BindJSON(&login)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "No username or password found"})
+		return
+	}
+	//miramos si estan los campos username y password
+	if login["username"] == "" || login["password"] == "" {
+		c.JSON(400, gin.H{"error": "No username or password found"})
+		return
+	}
+	user, status := api.Login(login["username"])
+	if status == constants.NOT_FOUND {
+		c.JSON(400, gin.H{"error": "User not found"})
+		return
+	}
+	if status == constants.ERROR {
+		c.JSON(500, gin.H{"error": "Internal server error"})
+		return
+	}
+	c.JSON(200, gin.H{"status": "User found", "user": user})
 }

@@ -12,3 +12,8 @@ func Register(username string, password string) int {
 	status := repository.Add(user)
 	return status
 }
+
+func Login(username string) (models.User, int) {
+	user, status := repository.Get(username)
+	return user, status
+}

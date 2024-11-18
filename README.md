@@ -13,3 +13,4 @@ El proyecto se ha estructurado de la siguiente manera:
 - repository -> contiene el codigo de las funciones de la base de datos
 
 ### 1.3. CREACION DE LA BASE DE DATOS
+Para la peersistencia usada en este proyecto se ha decidido usar JSON. Se han creado dos JSON, uno para guardar los usuarios y otro para guardar los archivos.
