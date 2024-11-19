@@ -69,7 +69,7 @@ func Login(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "No username or password found"})
 		return
 	}
-	user, status := api.Login(login["username"])
+	user, status := api.Login(login["username"], login["password"])
 	if status == constants.NOT_FOUND {
 		c.JSON(400, gin.H{"error": "User not found"})
 		return
