@@ -2,6 +2,8 @@ package api
 
 import (
 	"crypto/sha256"
+	"encoding/base64"
+
 	"github.com/luideiz/API_Go/constants"
 	"github.com/luideiz/API_Go/models"
 	"github.com/luideiz/API_Go/repository"
@@ -12,8 +14,9 @@ func Register(username string, password string) int {
 	hash := sha256.New()
 	hash.Write([]byte(password))
 	password = string(hash.Sum(nil))
-	models.SetUsername(&user, username)
-	models.SetPassword(&user, password)
+	password_sha := base64.StdEncoding.EncodeToString([]byte(password))
+	user.USERNAME = username
+	user.PASSWORD = password_sha
 	status := repository.Add(user)
 	return status
 }
@@ -27,6 +30,7 @@ func Login(username string, password string) (models.User, int) {
 	hash := sha256.New()
 	hash.Write([]byte(password_user))
 	password_user = string(hash.Sum(nil))
+	password_user = base64.StdEncoding.EncodeToString([]byte(password_user))
 	if password_user != password {
 		return user, constants.INVALID_PASSWORD
 	}

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/luideiz/API_Go/api"
 	"github.com/luideiz/API_Go/constants"
+	"github.com/luideiz/API_Go/models"
 	//"fmt"
 )
 
@@ -48,7 +49,13 @@ func Register(c *gin.Context) {
 		c.JSON(500, gin.H{"error": "Internal server error"})
 		return
 	}
-	c.JSON(200, gin.H{"status": "User created"})
+	var token models.Token
+	token, status = models.CreateToken()
+	if status == constants.ERROR {
+		c.JSON(500, gin.H{"error": "Internal server error"})
+		return
+	}
+	c.JSON(200, gin.H {"token": token.TOKEN})
 }
 
 func Login(c *gin.Context) {
