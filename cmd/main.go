@@ -76,7 +76,7 @@ func Login(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "No username or password found"})
 		return
 	}
-	user, status := api.Login(login["username"], login["password"])
+	_, status := api.Login(login["username"], login["password"])
 	if status == constants.NOT_FOUND {
 		c.JSON(400, gin.H{"error": "User not found"})
 		return
@@ -85,5 +85,11 @@ func Login(c *gin.Context) {
 		c.JSON(500, gin.H{"error": "Internal server error"})
 		return
 	}
-	c.JSON(200, gin.H{"status": "User found", "user": user})
+	var token models.Token
+	token, status = models.CreateToken()
+	if status == constants.ERROR {
+		c.JSON(500, gin.H{"error": "Internal server error"})
+		return
+	}
+	c.JSON(200, gin.H {"token": token.TOKEN})
 }
