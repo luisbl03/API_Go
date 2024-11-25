@@ -11,13 +11,15 @@ import (
 type Token struct {
 	TOKEN string
 	EXPIRATION time.Time
+	User string
 }
 
 func IsAlive(token Token) bool {
 	return token.EXPIRATION.After(time.Now())
 }
-func CreateToken() (Token, int) {
+func CreateToken(user string) (Token, int) {
 	var token Token
+	token.User = user
 	bytes := make([]byte, 32)
 	_, err := rand.Read(bytes)
 	if err != nil {

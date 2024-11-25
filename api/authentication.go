@@ -21,10 +21,10 @@ func Register(username string, password string) int {
 	return status
 }
 
-func Login(username string, password string) (models.User, int) {
+func Login(username string, password string) int {
 	user, status := repository.Get(username)
 	if status != constants.OK {
-		return user, status
+		return status
 	}
 	password_user := user.PASSWORD
 	hash := sha256.New()
@@ -32,7 +32,7 @@ func Login(username string, password string) (models.User, int) {
 	password_user = string(hash.Sum(nil))
 	password_user = base64.StdEncoding.EncodeToString([]byte(password_user))
 	if password_user != password {
-		return user, constants.INVALID_PASSWORD
+		return constants.INVALID_PASSWORD
 	}
-	return user, constants.OK
+	return constants.OK
 }
