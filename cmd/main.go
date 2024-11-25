@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/luideiz/API_Go/api"
 	"github.com/luideiz/API_Go/constants"
@@ -16,7 +15,7 @@ func main() {
 	api.GET("/version", getVersion) 
 	api.POST("/signup", register)
 	api.GET("/login", login)
-	//api.POST("/:username/:doc_id", upload)
+	api.POST("/:username/:doc_id", upload)
 	api.Run(":8080")
 
 }
@@ -80,6 +79,29 @@ func login(c *gin.Context) {
 	c.JSON(200, gin.H{"token":token.TOKEN})
 }
 
+func upload(c *gin.Context) {
+	log.Println("POST /:username/:doc_id")
+	valid, json,message := checkBody_file(c)
+	if !valid {
+		c.JSON(400, gin.H{"error":message})
+		return
+	}
+	valid, token := checkHeader(c)
+	if !valid {
+		c.JSON(401, gin.H{"error":"unauthorized"})
+		return
+	}
+	doc_content := json["doc_content"]
+	username := c.Param("username")
+	doc_id := c.Param("doc_id")
+	valid = checkToken(token, username)
+	if !valid {
+		c.JSON(401, gin.H{"error":"unauthorized"})
+		return
+	}
+	status := api.Upload(username, doc_content, doc_id)
+}
+
 func checkBody_user(c *gin.Context) (bool,map[string]string,string) {
 	//miramos si el cuerpo del mensaje esta vacio
 	var json map[string]string
@@ -99,4 +121,36 @@ func checkBody_user(c *gin.Context) (bool,map[string]string,string) {
 		return false,json,"empty password"
 	}
 	return true,json,""
+}
+
+func checkBody_file(c *gin.Context) (bool,map[string]string,string) {
+	var json map[string]string
+	if c.Request.Body == nil {
+		return false, json, "empty body"
+	}
+	err := c.BindJSON(&json)
+	if err != nil {
+		return false, json, "invalid json"
+	}
+	if json["doc_content"] == "" {
+		return false, json, "empty doc_content"
+	}
+	return true, json, ""
+}
+
+func checkHeader(c *gin.Context) (bool,string) {
+	token := c.Request.Header.Get("Authorization")
+	if token == "" {
+		return false, ""
+	}
+	return true, token
+}
+
+func checkToken(token string, username string) bool {
+	for _, t := range tokens {
+		if t.TOKEN == token && t.User == username && models.IsAlive(t) {
+			return true
+		}
+	}
+	return false
 }
