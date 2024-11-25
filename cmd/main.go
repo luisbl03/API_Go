@@ -15,7 +15,7 @@ func main() {
 	api := gin.Default()
 	api.GET("/version", getVersion) 
 	api.POST("/signup", register)
-	//api.GET("/login", login)
+	api.GET("/login", login)
 	//api.POST("/:username/:doc_id", upload)
 	api.Run(":8080")
 
@@ -52,6 +52,32 @@ func register(c *gin.Context) {
 	}
 	tokens = append(tokens, token)
 	c.JSON(201, gin.H{"token":token.TOKEN})
+}
+
+func login(c *gin.Context) {
+	log.Println("GET /login")
+	valid, json,message := checkBody_user(c)
+	if !valid {
+		c.JSON(400, gin.H{"error":message})
+		return
+	}
+	username := json["username"]
+	password := json["password"]
+	status := api.Login(username,password)
+	if status == constants.NOT_FOUND {
+		c.JSON(404, gin.H{"error":"user not found"})
+		return
+	}
+	if status == constants.ERROR {
+		c.JSON(500,gin.H{"error":"internal error (login)"})
+		return
+	}
+	token, status := models.CreateToken(username)
+	if status == constants.ERROR {
+		c.JSON(500, gin.H{"error":"internal error (token)"})
+		return
+	}
+	c.JSON(200, gin.H{"token":token.TOKEN})
 }
 
 func checkBody_user(c *gin.Context) (bool,map[string]string,string) {
