@@ -76,6 +76,7 @@ func login(c *gin.Context) {
 		c.JSON(500, gin.H{"error":"internal error (token)"})
 		return
 	}
+	tokens = append(tokens, token)
 	c.JSON(200, gin.H{"token":token.TOKEN})
 }
 
@@ -88,18 +89,29 @@ func upload(c *gin.Context) {
 	}
 	valid, token := checkHeader(c)
 	if !valid {
-		c.JSON(401, gin.H{"error":"unauthorized"})
+		c.JSON(401, gin.H{"error":"unauthorized (no header)"})
 		return
 	}
 	doc_content := json["doc_content"]
 	username := c.Param("username")
 	doc_id := c.Param("doc_id")
+	log.Println("token: ", token)
+	log.Println("doc_content: ", doc_content)
 	valid = checkToken(token, username)
 	if !valid {
-		c.JSON(401, gin.H{"error":"unauthorized"})
+		c.JSON(401, gin.H{"error":"unauthorized (invalid token)"})
 		return
 	}
 	status := api.Upload(username, doc_content, doc_id)
+	if status == constants.ERROR {
+		c.JSON(500, gin.H{"error":"internal error (upload)"})
+		return
+	}
+	if status == constants.EXISTS {
+		c.JSON(409, gin.H{"error":"document exists"})
+		return
+	}
+	c.JSON(201, gin.H{"size":status})
 }
 
 func checkBody_user(c *gin.Context) (bool,map[string]string,string) {
@@ -148,7 +160,11 @@ func checkHeader(c *gin.Context) (bool,string) {
 
 func checkToken(token string, username string) bool {
 	for _, t := range tokens {
-		if t.TOKEN == token && t.User == username && models.IsAlive(t) {
+		if t.User == username {
+			log.Println("token found: ", t.TOKEN)
+		}
+		if t.TOKEN == token {
+			log.Println("token found: ", t.TOKEN)
 			return true
 		}
 	}
