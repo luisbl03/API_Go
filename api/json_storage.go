@@ -24,3 +24,7 @@ func Root(username string) int {
 	status:= repository.Root(folder)
 	return status
 }
+
+func Get(username string, id string) (string, int) {
+	
+}

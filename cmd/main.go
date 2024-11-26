@@ -107,9 +107,9 @@ func upload(c *gin.Context) {
 	doc_id := c.Param("doc_id")
 	log.Println("token: ", token)
 	log.Println("doc_content: ", doc_content)
-	valid = checkToken(token, username)
-	if !valid {
-		c.JSON(401, gin.H{"error":"unauthorized (invalid token)"})
+	msg := checkToken(token, username)
+	if msg != "" {
+		c.JSON(401, gin.H{"error":msg})
 		return
 	}
 	status := api.Upload(username, doc_content, doc_id)
@@ -125,7 +125,19 @@ func upload(c *gin.Context) {
 }
 
 func getFile(c *gin.Context) {
-
+	log.Println("GET /:username/:doc_id")
+	username := c.Param("username")
+	doc_id := c.Param("doc_id")
+	valid, token := checkHeader(c)
+	if !valid {
+		c.JSON(401, gin.H{"error":"unauthorized (no header)"})
+		return
+	}
+	msg := checkToken(token, username)
+	if msg != "" {
+		c.JSON(401, gin.H{"error":msg})
+		return
+	}
 }
 
 func checkBody_user(c *gin.Context) (bool,map[string]string,string) {
@@ -172,15 +184,16 @@ func checkHeader(c *gin.Context) (bool,string) {
 	return true, token
 }
 
-func checkToken(token string, username string) bool {
+func checkToken(token string, username string) string {
 	for _, t := range tokens {
 		if t.User == username {
 			if t.TOKEN == token {
 				if models.IsAlive(t) {
-					return true
+					return ""
 				}
+				return "expired token"
 			}
 		}
 	}
-	return false
+	return "not found"
 }
