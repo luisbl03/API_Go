@@ -176,8 +176,9 @@ func checkToken(token string, username string) bool {
 	for _, t := range tokens {
 		if t.User == username {
 			if t.TOKEN == token {
-				log.Println("token found: ", t.TOKEN)
-				return true
+				if models.IsAlive(t) {
+					return true
+				}
 			}
 		}
 	}

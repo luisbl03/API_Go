@@ -13,9 +13,8 @@ func Upload(username string, data string, id string) int {
 	hash := md5.New()
 	hash.Write([]byte(id))
 	file.Id = hex.EncodeToString(hash.Sum(nil))
-	file.Username = username
 	file.Data = data
-	status:= repository.Add_json(file)
+	status:= repository.Add_json(file, username)
 	return status
 }
 
