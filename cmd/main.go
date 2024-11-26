@@ -16,6 +16,7 @@ func main() {
 	api.POST("/signup", register)
 	api.GET("/login", login)
 	api.POST("/:username/:doc_id", upload)
+	api.GET("/:username/:doc_id", getFile)
 	api.Run(":8080")
 
 }
@@ -112,6 +113,10 @@ func upload(c *gin.Context) {
 		return
 	}
 	c.JSON(201, gin.H{"size":status})
+}
+
+func getFile(c *gin.Context) {
+
 }
 
 func checkBody_user(c *gin.Context) (bool,map[string]string,string) {
