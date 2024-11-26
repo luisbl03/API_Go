@@ -31,7 +31,7 @@ func Add_json(file models.Json) int {
 			return constants.ERROR
 		}
 		for _, u := range archivos {
-			if u.Id == file.Id {
+			if u.Id == file.Id && u.Username == file.Username {
 				return constants.EXISTS
 			}
 		}

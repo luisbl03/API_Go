@@ -161,11 +161,10 @@ func checkHeader(c *gin.Context) (bool,string) {
 func checkToken(token string, username string) bool {
 	for _, t := range tokens {
 		if t.User == username {
-			log.Println("token found: ", t.TOKEN)
-		}
-		if t.TOKEN == token {
-			log.Println("token found: ", t.TOKEN)
-			return true
+			if t.TOKEN == token {
+				log.Println("token found: ", t.TOKEN)
+				return true
+			}
 		}
 	}
 	return false
