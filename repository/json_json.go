@@ -49,3 +49,31 @@ func Add_json(file models.Json) int {
 	after := fileInfo.Size()
 	return int(after-before)
 }
+
+func Root(folder models.Folder) int {
+	jsonFile, err := os.Open(ARCHIVES)
+	if err != nil {
+		return constants.ERROR
+	}
+	defer jsonFile.Close()
+	roots := []models.Folder{}
+	info, _ := jsonFile.Stat()
+	if info.Size() == 0 {
+		roots = append(roots, folder)
+	} else {
+		err = json.NewDecoder(jsonFile).Decode(&roots)
+		if err != nil {
+			return constants.ERROR
+		}
+		roots = append(roots, folder)
+	}
+	jsonData, err := json.MarshalIndent(roots, "", "  ")
+	if err != nil {
+		return constants.ERROR
+	}
+	err = os.WriteFile(ARCHIVES, jsonData, 0644)
+	if err != nil {
+		return constants.ERROR
+	}
+	return constants.OK
+}

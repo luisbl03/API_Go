@@ -45,6 +45,15 @@ func register(c *gin.Context) {
 		c.JSON(500, gin.H{"error":"internal error (register)"})
 		return
 	}
+	status = api.Root(username)
+	if status == constants.NOT_FOUND {
+		c.JSON(404, gin.H{"error":"user not found"})
+		return
+	}
+	if status == constants.ERROR {
+		c.JSON(500, gin.H{"error":"internal error (root)"})
+		return
+	}
 	token, status := models.CreateToken(username)
 	if status != constants.OK {
 		c.JSON(500, gin.H{"error":"internal error (token)"})

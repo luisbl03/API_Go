@@ -18,3 +18,10 @@ func Upload(username string, data string, id string) int {
 	status:= repository.Add_json(file)
 	return status
 }
+
+func Root(username string) int {
+	var folder models.Folder
+	folder.User = username
+	status:= repository.Root(folder)
+	return status
+}
