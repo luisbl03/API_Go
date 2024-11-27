@@ -32,28 +32,26 @@ func getVersion(c *gin.Context) {
 
 func register(c *gin.Context) {
 	log.Println("POST /signup")
-	valid, json,message := checkBody_user(c)
+	valid, user,message := checkBody_user(c)
 	if !valid {
 		c.JSON(400, gin.H{"error":message})
 		return
 	}
-	username := json["username"]
-	password := json["password"]
 
-	username = api.Encrypt_hash(username)
-	password = api.Encrypt_hash(password)
-	status := api.Register(username, password)
+	user.USERNAME = api.Encrypt_hash(user.USERNAME)
+	user.PASSWORD = api.Encrypt_hash(user.PASSWORD)
+	status := api.Register(user)
 	msg, code := Status(status)
 	if msg != "" {
 		c.JSON(code, gin.H{"error":msg})
 		return
 	}
-	status = api.Root(username)
+	status = api.Root(user.USERNAME)
 	if status != constants.OK {
 		c.JSON(500, gin.H{"error":"internal error (root)"})
 		return
 	}
-	token, status := models.CreateToken(username)
+	token, status := models.CreateToken(user.USERNAME)
 	if status != constants.OK {
 		c.JSON(500, gin.H{"error":"internal error (token)"})
 		return
@@ -64,20 +62,21 @@ func register(c *gin.Context) {
 
 func login(c *gin.Context) {
 	log.Println("GET /login")
-	valid, json,message := checkBody_user(c)
+	valid, user,message := checkBody_user(c)
 	if !valid {
 		c.JSON(400, gin.H{"error":message})
 		return
 	}
-	username := json["username"]
-	password := json["password"]
-	status := api.Login(username,password)
+	user.USERNAME = api.Encrypt_hash(user.USERNAME)
+	user.PASSWORD = api.Encrypt_hash(user.PASSWORD)
+	status := api.Login(user)
 	msg, code := Status(status)
 	if msg != "" {
 		c.JSON(code, gin.H{"error":msg})
 		return
 	}
-	token, status := models.CreateToken(username)
+	deleteToken(user.USERNAME) //reiniciamos sesion y asi evitamos conflictos con los tokens
+	token, status := models.CreateToken(user.USERNAME)
 	if status == constants.ERROR {
 		c.JSON(500, gin.H{"error":"internal error (token)"})
 		return
@@ -98,17 +97,17 @@ func upload(c *gin.Context) {
 		c.JSON(401, gin.H{"error":"unauthorized (no header)"})
 		return
 	}
-	doc_content := json["doc_content"]
 	username := c.Param("username")
+	username = api.Encrypt_hash(username)
 	doc_id := c.Param("doc_id")
 	log.Println("token: ", token)
-	log.Println("doc_content: ", doc_content)
+	log.Println("doc_content: ", json.Doc_content)
 	msg := checkToken(token, username)
 	if msg != "" {
 		c.JSON(401, gin.H{"error":msg})
 		return
 	}
-	status := api.Upload(username, doc_content, doc_id)
+	status := api.Upload(username, json, doc_id)
 	if status == constants.ERROR {
 		c.JSON(500, gin.H{"error":"internal error (upload)"})
 		return
@@ -124,29 +123,29 @@ func getFile(c *gin.Context) {
 	
 }
 
-func checkBody_user(c *gin.Context) (bool,map[string]string,string) {
+func checkBody_user(c *gin.Context) (bool,models.User,string) {
 	//miramos si el cuerpo del mensaje esta vacio
-	var json map[string]string
+	var user models.User
 	if c.Request.Body == nil {
-		return false,json,"empty body"
+		return false,user,"empty body"
 	}
-	err := c.BindJSON(&json)
+	err := c.BindJSON(&user)
 	if err != nil {
-		return false,json,"invalid json"
+		return false,user,"invalid json"
 	}
 	//miramos si el campo username esta vacio
-	if json["username"] == "" {
-		return false,json,"empty username"
+	if user.USERNAME == "" {
+		return false,user,"empty username"
 	}
 	//miramos si el campo password esta vacio
-	if json["password"] == "" {
-		return false,json,"empty password"
+	if user.PASSWORD == "" {
+		return false,user,"empty password"
 	}
-	return true,json,""
+	return true,user,""
 }
 
-func checkBody_file(c *gin.Context) (bool,map[string]string,string) {
-	var json map[string]string
+func checkBody_file(c *gin.Context) (bool,models.Json,string) {
+	var json models.Json
 	if c.Request.Body == nil {
 		return false, json, "empty body"
 	}
@@ -154,7 +153,7 @@ func checkBody_file(c *gin.Context) (bool,map[string]string,string) {
 	if err != nil {
 		return false, json, "invalid json"
 	}
-	if json["doc_content"] == "" {
+	if json.Doc_content == "" {
 		return false, json, "empty doc_content"
 	}
 	return true, json, ""
@@ -180,6 +179,15 @@ func checkToken(token string, username string) string {
 		}
 	}
 	return "not found"
+}
+
+func deleteToken(username string) {
+	for i, t := range tokens {
+		if t.User == username {
+			tokens = append(tokens[:i], tokens[i+1:]...)
+			return
+		}
+	}
 }
 
 func Status(status int) (string, int) {

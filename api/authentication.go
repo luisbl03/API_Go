@@ -9,25 +9,17 @@ import (
 	"github.com/luideiz/API_Go/repository"
 )
 
-func Register(username string, password string) int {
-	var user models.User
-	user.USERNAME = username
-	user.PASSWORD = password
+func Register(user models.User) int {
 	status := repository.Add(user)
 	return status
 }
 
-func Login(username string, password string) int {
-	user, status := repository.Get(username)
+func Login(u models.User) int {
+	user, status := repository.Get(u.USERNAME)
 	if status != constants.OK {
 		return status
 	}
-	password_user := user.PASSWORD
-	hash := sha256.New()
-	hash.Write([]byte(password_user))
-	password_user = string(hash.Sum(nil))
-	password_user = base64.StdEncoding.EncodeToString([]byte(password_user))
-	if password_user != password {
+	if user.PASSWORD!= u.PASSWORD {
 		return constants.INVALID_PASSWORD
 	}
 	return constants.OK

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"log"
 	"os"
 
 	"github.com/BurntSushi/toml"
@@ -17,8 +16,9 @@ func Load(filename string){
 	if err != nil {
 		panic(err)
 	}
-	err = os.Mkdir(Configs.Storage_root, 0755)
-	if err != nil {
-		log.Fatalf("Error creating root directory: %v", err)
+	//miramos si existe el directorio
+	_,err = os.Stat(Configs.Storage_root)
+	if os.IsNotExist(err) {
+		os.Mkdir(Configs.Storage_root, 0755)
 	}
 }

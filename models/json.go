@@ -1,6 +1,5 @@
 package models
 
 type Json struct {
-	Id string
-	Data string
+	Doc_content string
 }
