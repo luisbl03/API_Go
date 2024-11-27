@@ -9,6 +9,7 @@ import (
 	"github.com/luideiz/API_Go/constants"
 	"github.com/luideiz/API_Go/models"
 	"github.com/luideiz/API_Go/repository"
+	"github.com/luideiz/API_Go/config"
 )
 
 func Upload(username string, data string, id string) int {
@@ -22,7 +23,8 @@ func Upload(username string, data string, id string) int {
 }
 
 func Root(username string) int {
-	err := os.Mkdir(username, 0755)
+	path := config.Configs.Storage_root + "/" + username
+	err := os.Mkdir(path, 0755)
 	if err != nil {
 		return constants.ERROR
 	}

@@ -6,12 +6,15 @@ import (
 	"github.com/luideiz/API_Go/api"
 	"github.com/luideiz/API_Go/constants"
 	"github.com/luideiz/API_Go/models"
+	"github.com/luideiz/API_Go/config"
 	//"fmt"
 )
+
 var tokens [] models.Token
 func main() {
 	tokens = [] models.Token{}
 	api := gin.Default()
+	config.Load("config/config.toml")
 	api.GET("/version", getVersion) 
 	api.POST("/signup", register)
 	api.GET("/login", login)
@@ -43,6 +46,11 @@ func register(c *gin.Context) {
 	msg, code := Status(status)
 	if msg != "" {
 		c.JSON(code, gin.H{"error":msg})
+		return
+	}
+	status = api.Root(username)
+	if status != constants.OK {
+		c.JSON(500, gin.H{"error":"internal error (root)"})
 		return
 	}
 	token, status := models.CreateToken(username)
