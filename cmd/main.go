@@ -36,22 +36,13 @@ func register(c *gin.Context) {
 	}
 	username := json["username"]
 	password := json["password"]
+
+	username = api.Encrypt_hash(username)
+	password = api.Encrypt_hash(password)
 	status := api.Register(username, password)
-	if status == constants.EXISTS {
-		c.JSON(409, gin.H{"error":"user exists"})
-		return
-	}
-	if status == constants.ERROR {
-		c.JSON(500, gin.H{"error":"internal error (register)"})
-		return
-	}
-	status = api.Root(username)
-	if status == constants.NOT_FOUND {
-		c.JSON(404, gin.H{"error":"user not found"})
-		return
-	}
-	if status == constants.ERROR {
-		c.JSON(500, gin.H{"error":"internal error (root)"})
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
 		return
 	}
 	token, status := models.CreateToken(username)
@@ -60,7 +51,7 @@ func register(c *gin.Context) {
 		return
 	}
 	tokens = append(tokens, token)
-	c.JSON(201, gin.H{"token":token.TOKEN})
+	c.JSON(code, gin.H{"token":token.TOKEN})
 }
 
 func login(c *gin.Context) {
@@ -73,12 +64,9 @@ func login(c *gin.Context) {
 	username := json["username"]
 	password := json["password"]
 	status := api.Login(username,password)
-	if status == constants.NOT_FOUND {
-		c.JSON(404, gin.H{"error":"user not found"})
-		return
-	}
-	if status == constants.ERROR {
-		c.JSON(500,gin.H{"error":"internal error (login)"})
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
 		return
 	}
 	token, status := models.CreateToken(username)
@@ -87,7 +75,7 @@ func login(c *gin.Context) {
 		return
 	}
 	tokens = append(tokens, token)
-	c.JSON(200, gin.H{"token":token.TOKEN})
+	c.JSON(code, gin.H{"token":token.TOKEN})
 }
 
 func upload(c *gin.Context) {
@@ -125,19 +113,7 @@ func upload(c *gin.Context) {
 }
 
 func getFile(c *gin.Context) {
-	log.Println("GET /:username/:doc_id")
-	username := c.Param("username")
-	doc_id := c.Param("doc_id")
-	valid, token := checkHeader(c)
-	if !valid {
-		c.JSON(401, gin.H{"error":"unauthorized (no header)"})
-		return
-	}
-	msg := checkToken(token, username)
-	if msg != "" {
-		c.JSON(401, gin.H{"error":msg})
-		return
-	}
+	
 }
 
 func checkBody_user(c *gin.Context) (bool,map[string]string,string) {
@@ -196,4 +172,20 @@ func checkToken(token string, username string) string {
 		}
 	}
 	return "not found"
+}
+
+func Status(status int) (string, int) {
+	if status == constants.ERROR {
+		return "internal error", 500
+	}
+	if status == constants.EXISTS {
+		return "exists", 409
+	}
+	if status == constants.NOT_FOUND {
+		return "not found", 404
+	}
+	if status == constants.CREATED {
+		return "",201
+	}
+	return "", 200
 }

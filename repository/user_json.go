@@ -56,7 +56,7 @@ func Add(user models.User) int {
 	if err != nil {
 		return constants.ERROR
 	}
-	return constants.OK
+	return constants.CREATED
 }
 
 func Get(username string) (models.User, int) {

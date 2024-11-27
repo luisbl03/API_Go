@@ -11,12 +11,8 @@ import (
 
 func Register(username string, password string) int {
 	var user models.User
-	hash := sha256.New()
-	hash.Write([]byte(password))
-	password = string(hash.Sum(nil))
-	password_sha := base64.StdEncoding.EncodeToString([]byte(password))
 	user.USERNAME = username
-	user.PASSWORD = password_sha
+	user.PASSWORD = password
 	status := repository.Add(user)
 	return status
 }
@@ -35,4 +31,11 @@ func Login(username string, password string) int {
 		return constants.INVALID_PASSWORD
 	}
 	return constants.OK
+}
+
+func Encrypt_hash(field string) string {
+	hash := sha256.New()
+	hash.Write([]byte(field))
+	field = base64.StdEncoding.EncodeToString([]byte(field))
+	return field
 }

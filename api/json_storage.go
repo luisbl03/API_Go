@@ -2,10 +2,13 @@ package api
 
 import (
 	//"github.com/luideiz/API_Go/constants"
-	"github.com/luideiz/API_Go/models"
-	"github.com/luideiz/API_Go/repository"
 	"crypto/md5"
 	"encoding/hex"
+	"os"
+
+	"github.com/luideiz/API_Go/constants"
+	"github.com/luideiz/API_Go/models"
+	"github.com/luideiz/API_Go/repository"
 )
 
 func Upload(username string, data string, id string) int {
@@ -19,12 +22,9 @@ func Upload(username string, data string, id string) int {
 }
 
 func Root(username string) int {
-	var folder models.Folder
-	folder.User = username
-	status:= repository.Root(folder)
-	return status
-}
-
-func Get(username string, id string) (string, int) {
-	
+	err := os.Mkdir(username, 0755)
+	if err != nil {
+		return constants.ERROR
+	}
+	return constants.OK
 }
