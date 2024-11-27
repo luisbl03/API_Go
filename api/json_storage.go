@@ -25,3 +25,10 @@ func Root(username string) int {
 	}
 	return constants.OK
 }
+
+func GetFile(id string, user string) (models.Json, int) {
+	archive := id + ".json"
+	path := path.Join(config.Configs.Storage_root, user, archive)
+	json, status := repository.GetFile(path)
+	return json, status
+}

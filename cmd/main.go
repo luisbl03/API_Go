@@ -108,19 +108,36 @@ func upload(c *gin.Context) {
 		return
 	}
 	status := api.Upload(username, json, doc_id)
-	if status == constants.ERROR {
-		c.JSON(500, gin.H{"error":"internal error (upload)"})
-		return
-	}
-	if status == constants.EXISTS {
-		c.JSON(409, gin.H{"error":"document exists"})
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
 		return
 	}
 	c.JSON(201, gin.H{"size":status})
 }
 
 func getFile(c *gin.Context) {
-	
+	log.Println("GET /:username/:doc_id")
+	username := c.Param("username")
+	username = api.Encrypt_hash(username)
+	doc_id := c.Param("doc_id")
+	valid, token := checkHeader(c)
+	if !valid {
+		c.JSON(401, gin.H{"error":"unauthorized (no header)"})
+		return
+	}
+	msg := checkToken(token, username)
+	if msg != "" {
+		c.JSON(401, gin.H{"error":msg})
+		return
+	}
+	json, status := api.GetFile(doc_id, username)
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
+		return
+	}
+	c.JSON(200, gin.H{"doc_content":json.Doc_content})
 }
 
 func checkBody_user(c *gin.Context) (bool,models.User,string) {
