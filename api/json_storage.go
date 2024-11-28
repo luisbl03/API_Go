@@ -4,7 +4,6 @@ import (
 	//"github.com/luideiz/API_Go/constants"
 	"os"
 	"path"
-
 	"github.com/luideiz/API_Go/config"
 	"github.com/luideiz/API_Go/constants"
 	"github.com/luideiz/API_Go/models"
@@ -46,4 +45,10 @@ func Delete(id string, username string) int {
 	path := path.Join(config.Configs.Storage_root, username, archive)
 	status := repository.Delete(path)
 	return status
+}
+
+func List_Files(user string) ([]models.File, int) {
+	path := config.Configs.Storage_root + "/" + user
+	files, status := repository.List_Files(path)
+	return files, status
 }

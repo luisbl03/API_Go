@@ -22,6 +22,7 @@ func main() {
 	api.GET("/:username/:doc_id", getFile)
 	api.PUT("/:username/:doc_id", update)
 	api.DELETE("/:username/:doc_id", delete)
+	api.GET(("/:username/_all_docs"), listFiles)
 	api.Run(":8080")
 
 }
@@ -194,6 +195,29 @@ func delete(c *gin.Context) {
 		return
 	}
 	c.JSON(204, gin.H{})
+}
+
+func listFiles(c *gin.Context) {
+	log.Println("GET /:username")
+	username := c.Param("username")
+	username = api.Encrypt_hash(username)
+	valid, token := checkHeader(c)
+	if !valid {
+		c.JSON(401, gin.H{"error":"unauthorized (no header)"})
+		return
+	}
+	msg := checkToken(token, username)
+	if msg != "" {
+		c.JSON(401, gin.H{"error":msg})
+		return
+	}
+	files, status := api.List_Files(username)
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
+		return
+	}
+	c.JSON(200, gin.H{"files":files})
 }
 
 func checkBody_user(c *gin.Context) (bool,models.User,string) {

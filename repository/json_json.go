@@ -96,3 +96,23 @@ func Delete (path string) int {
 	}
 	return constants.OK
 }
+
+func List_Files(path string) ([]models.File, int) {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return nil, constants.ERROR
+	}
+	var files []models.File
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		var file models.Json
+		file, status := GetFile(path + "/" + entry.Name())
+		if status != constants.OK {
+			return nil, status
+		}
+		files = append(files, models.File{Id: entry.Name(), Doc_content: file})
+	}
+	return files, constants.OK
+}
