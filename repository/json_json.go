@@ -53,3 +53,34 @@ func GetFile(path string) (models.Json, int) {
 	}
 	return data, constants.OK
 }
+
+func Update(path string, data models.Json) int {
+	_,err := os.Stat(path)
+	if err != nil {
+		return constants.NOT_FOUND
+	}
+	//borrado del content y metemos lo nuevo
+	file, err := os.Open(path)
+	if err != nil {
+		return constants.ERROR
+	}
+	defer file.Close()
+	err = os.Truncate(path, 0)
+	if err != nil {
+		return constants.ERROR
+	}
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return constants.ERROR
+	}
+	err = os.WriteFile(path, jsonData, 0644)
+	if err != nil {
+		return constants.ERROR
+	}
+	stat,err := os.Stat(path)
+	if err != nil {
+		return constants.ERROR
+	}
+	size := stat.Size()
+	return int(size)
+}

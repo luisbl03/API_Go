@@ -20,6 +20,7 @@ func main() {
 	api.GET("/login", login)
 	api.POST("/:username/:doc_id", upload)
 	api.GET("/:username/:doc_id", getFile)
+	api.PUT("/:username/:doc_id", update)
 	api.Run(":8080")
 
 }
@@ -138,6 +139,36 @@ func getFile(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{"doc_content":json.Doc_content})
+}
+
+func update(c *gin.Context) {
+	log.Println("PUT /:username/:doc_id")
+	username := c.Param("username")
+	username = api.Encrypt_hash(username)
+	doc_id := c.Param("doc_id")
+	valid, token := checkHeader(c)
+	if !valid {
+		c.JSON(401, gin.H{"error":"unauthorized (no header)"})
+		return
+	}
+	msg := checkToken(token, username)
+	if msg != "" {
+		c.JSON(401, gin.H{"error":msg})
+		return
+	}
+	valid, json ,msg:= checkBody_file(c)
+	if !valid {
+		c.JSON(400, gin.H{"error":msg})
+		return
+	}
+	status := api.Update(doc_id, username, json)
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
+		return
+	}
+	c.JSON(200, gin.H{"size":status})
+
 }
 
 func checkBody_user(c *gin.Context) (bool,models.User,string) {

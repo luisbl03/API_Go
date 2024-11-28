@@ -4,6 +4,7 @@ import (
 	//"github.com/luideiz/API_Go/constants"
 	"os"
 	"path"
+
 	"github.com/luideiz/API_Go/config"
 	"github.com/luideiz/API_Go/constants"
 	"github.com/luideiz/API_Go/models"
@@ -31,4 +32,11 @@ func GetFile(id string, user string) (models.Json, int) {
 	path := path.Join(config.Configs.Storage_root, user, archive)
 	json, status := repository.GetFile(path)
 	return json, status
+}
+
+func Update(id string, user string, json models.Json) int {
+	archive := id + ".json"
+	path := path.Join(config.Configs.Storage_root, user, archive)
+	status := repository.Update(path, json)
+	return status
 }
