@@ -84,3 +84,15 @@ func Update(path string, data models.Json) int {
 	size := stat.Size()
 	return int(size)
 }
+
+func Delete (path string) int {
+	_,err := os.Stat(path)
+	if err != nil {
+		return constants.NOT_FOUND
+	}
+	err = os.Remove(path)
+	if err != nil {
+		return constants.ERROR
+	}
+	return constants.OK
+}

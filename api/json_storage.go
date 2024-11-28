@@ -40,3 +40,10 @@ func Update(id string, user string, json models.Json) int {
 	status := repository.Update(path, json)
 	return status
 }
+
+func Delete(id string, username string) int {
+	archive := id + ".json"
+	path := path.Join(config.Configs.Storage_root, username, archive)
+	status := repository.Delete(path)
+	return status
+}
