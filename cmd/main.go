@@ -60,7 +60,7 @@ func register(c *gin.Context) {
 		return
 	}
 	tokens = append(tokens, token)
-	c.JSON(code, gin.H{"token":token.TOKEN})
+	c.JSON(201, gin.H{"token":token.TOKEN})
 }
 
 func login(c *gin.Context) {
