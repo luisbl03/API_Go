@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"time"
-	"github.com/luideiz/API_Go/constants"
+	"github.com/luideoz/API_Go/constants"
 )
 
 // token struct

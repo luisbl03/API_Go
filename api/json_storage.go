@@ -4,10 +4,10 @@ import (
 	//"github.com/luideiz/API_Go/constants"
 	"os"
 	"path"
-	"github.com/luideiz/API_Go/config"
-	"github.com/luideiz/API_Go/constants"
-	"github.com/luideiz/API_Go/models"
-	"github.com/luideiz/API_Go/repository"
+	"github.com/luideoz/API_Go/config"
+	"github.com/luideoz/API_Go/constants"
+	"github.com/luideoz/API_Go/models"
+	"github.com/luideoz/API_Go/repository"
 )
 
 func Upload(username string,json models.Json, id string) int {

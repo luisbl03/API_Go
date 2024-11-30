@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 	"github.com/gin-gonic/gin"
-	"github.com/luideiz/API_Go/api"
-	"github.com/luideiz/API_Go/constants"
-	"github.com/luideiz/API_Go/models"
-	"github.com/luideiz/API_Go/config"
+	"github.com/luideoz/API_Go/api"
+	"github.com/luideoz/API_Go/constants"
+	"github.com/luideoz/API_Go/models"
+	"github.com/luideoz/API_Go/config"
 	//"fmt"
 )
 

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/luideiz/API_Go/constants"
-	"github.com/luideiz/API_Go/models"
+	"github.com/luideoz/API_Go/constants"
+	"github.com/luideoz/API_Go/models"
 )
 const (
 	FILE = "database/users.json"

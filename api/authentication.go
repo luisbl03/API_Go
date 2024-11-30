@@ -4,9 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"github.com/luideiz/API_Go/constants"
-	"github.com/luideiz/API_Go/models"
-	"github.com/luideiz/API_Go/repository"
+	"github.com/luideoz/API_Go/constants"
+	"github.com/luideoz/API_Go/models"
+	"github.com/luideoz/API_Go/repository"
 )
 
 func Register(user models.User) int {
