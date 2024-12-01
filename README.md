@@ -37,5 +37,29 @@ En este paquete definimos las constantes que se usan en el proyecto
 
 ### 2.4. paquete api
 En este paquete tenemos las funciones que definen la capa de negocio de la aplicacion
+#### 2.4.1. authentication.go
+En este archivo encontramos las funciones que se encargan de la autenticacion de los usuarios
+#### 2.4.2. json_storage.go
+En este archivo encontramos las funciones que se encargan de la persistencia de los archivos
 
 ### 2.5. paquete cmd
+Encontramos el main, aqui se define la api y los distintos endpoints
+
+## 3. EJECUCION
+Para ejecutar la api, se ejecuta el siguiente comando:
+```bash
+go run cmd/main.go
+```
+## 4. TESTING
+Se han realizado test a dos niveles, a nivel de http y a nivel de https:
+### 4.1. Test de http
+Para estos test se ha usado pytest, por ello se ha creado un entorno virtual con el siguiente comando:
+```bash
+python3 -m venv .venv
+```
+Luego se instala con pip las librerias pytest y requests. Y ejecutamos el comando:
+```bash
+pytest test/test_http.py
+```
+### 4.2. Test de https
+Lo que hemos usado esta vez, es la extension de visual studio code thunder client, se han definido una operacion por cada endpoint y se puede ir cambiando cabeceras y body para ver como se comporta la api. Para usarlos, se tiene que tener instalada la extension e importar el archuvo json que se encuentra en la carpeta test.
