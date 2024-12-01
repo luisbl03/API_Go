@@ -15,6 +15,10 @@ func main() {
 	tokens = [] models.Token{}
 	api := gin.Default()
 	config.Load("config/config.toml")
+
+	cert := "certs/cert.pem"
+	key := "certs/key.pem"
+
 	api.GET("/version", getVersion) 
 	api.POST("/signup", register)
 	api.GET("/login", login)
@@ -23,7 +27,12 @@ func main() {
 	api.PUT("/:username/:doc_id", update)
 	api.DELETE("/:username/:doc_id", delete)
 	api.GET(("/:username/_all_docs"), listFiles)
-	api.Run(":8080")
+
+	log.Println("Iniciando HTTPS en puerto 8080.....")
+	err := api.RunTLS(":8080", cert, key)
+	if err != nil {
+		log.Println("Error en la ejecucion del servidor HTTPS")
+	}
 
 }
 
