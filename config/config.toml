@@ -1,1 +1,2 @@
 root = "storage"
+database = "database"

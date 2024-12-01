@@ -13,7 +13,7 @@ El proyecto se ha estructurado de la siguiente manera:
 - repository -> contiene el codigo de las funciones de la base de datos
 
 ### 1.3. CREACION DE LA BASE DE DATOS
-Para la peersistencia usada en este proyecto se ha decidido usar JSON. Se han creado dos JSON, uno para guardar los usuarios y otro para guardar los archivos.
+Para la peersistencia usada en este proyecto se ha decidido usar JSON. Se han creado dos JSON, uno para guardar los usuarios y otro para guardar los archivos. En el config.toml de la carpeta config se especifica el directorio donde se guardaran los JSON.por defecto esta en database.
 
 ## 2. EXPLICACION DE LA API
 ### 2.1 paquete repository
