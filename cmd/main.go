@@ -90,7 +90,20 @@ func login(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{"token":result["token"]})
+}
 
+func upload(c *gin.Context) {
+	valid, json, msg := checkBody_file(c)
+	if !valid {
+		c.JSON(400, gin.H{"error":msg})
+		return
+	}
+	valid, token := checkHeader(c)
+	if !valid {
+		c.JSON(400, gin.H{"error":"token not found"})
+		return
+	}
+	
 }
 
 
@@ -113,4 +126,27 @@ func checkBody_user(c *gin.Context) (bool,models.User,string) {
 		return false,user,"empty password"
 	}
 	return true,user,""
+}
+
+func checkHeader(c *gin.Context) (bool,string) {
+	token := c.Request.Header.Get("Authorization")
+	if token == "" {
+		return false, ""
+	}
+	return true, token
+}
+
+func checkBody_file(c *gin.Context) (bool,models.Json,string) {
+	var json models.Json
+	if c.Request.Body == nil {
+		return false, json, "empty body"
+	}
+	err := c.BindJSON(&json)
+	if err != nil {
+		return false, json, "invalid json"
+	}
+	if json.Doc_content == "" {
+		return false, json, "empty doc_content"
+	}
+	return true, json, ""
 }
