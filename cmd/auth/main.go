@@ -18,6 +18,7 @@ func main() {
 	api := gin.Default()
 	config.Load("config/config.toml")
 	api.POST("/signup", signup)
+	api.POST("/login", login)
 	api.Run(":8081")
 }
 
@@ -57,6 +58,44 @@ func signup(c *gin.Context) {
 	}
 	log.Println("Token: ", token["token"])
 	c.JSON(201, gin.H{"token": token["token"]})
+}
+
+func login (c *gin.Context) {
+	log.Println("GET /login")
+	valid, user, message := checkBody_user(c)
+	if !valid {
+		c.JSON(400, gin.H{"error":message})
+		return
+	}
+	status := api.Login(user)
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
+		return
+	}
+	body := map[string]string{"username":user.USERNAME}
+	bodyJson, err := json.Marshal(body)
+	if err != nil {
+		log.Println(err)
+		c.JSON(500, gin.H{"error":"Creating token error (json)"})
+		return
+	}
+	response, err := http.Post("http://localhost:8082/token", "application/json", bytes.NewBuffer(bodyJson))
+	if err != nil {
+		log.Println(err)
+		c.JSON(500, gin.H{"error":"Creating token error (post)"})
+		return
+	}
+	var token map[string]string
+	err = json.NewDecoder(response.Body).Decode(&token)
+	if err != nil {
+		log.Println(err)
+		c.JSON(500, gin.H{"error":"Creating token error (decode)"})
+		return
+	}
+	log.Println("Token: ", token["token"])
+	c.JSON(200, gin.H{"token": token["token"]})
+
 }
 
 func checkBody_user(c *gin.Context) (bool,models.User,string) {

@@ -22,6 +22,7 @@ func createToken(c *gin.Context) {
 		c.JSON(400, gin.H{"error": message})
 		return
 	}
+	deleteToken(username["username"])
 	token, err := models.CreateToken(username["username"])
 	if err != constants.OK {
 		log.Println(err)
@@ -42,4 +43,25 @@ func checkBody_Username(c *gin.Context) (bool, map[string]string, string) {
 		return false, username, "Username is required"
 	}
 	return true, username, ""
+}
+func checkToken(token string, username string) string {
+	for _, t := range tokens {
+		if t.User == username {
+			if t.TOKEN == token {
+				if models.IsAlive(t) {
+					return ""
+				}
+				return "expired token"
+			}
+		}
+	}
+	return "not found"
+}
+func deleteToken(username string) {
+	for i, t := range tokens {
+		if t.User == username {
+			tokens = append(tokens[:i], tokens[i+1:]...)
+			return
+		}
+	}
 }
