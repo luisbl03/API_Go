@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/luideoz/API_Go/constants"
 	"github.com/luideoz/API_Go/models"
@@ -13,7 +12,7 @@ func main() {
 	tokens = [] models.Token{}
 	api := gin.Default()
 	api.POST("/token", createToken)
-	api.GET("/check", check)
+	api.GET("/check/:user/:token", check)
 	api.Run(":8082")
 }
 
@@ -32,20 +31,13 @@ func createToken(c *gin.Context) {
 	}
 	log.Printf("Token: %s", token.TOKEN)
 	tokens = append(tokens, token)
-	c.JSON(200, gin.H{"token": token.TOKEN})
+	c.JSON(204, gin.H{"token": token.TOKEN})
 }
 
 func check(c *gin.Context) {
-	var token map[string]string
-	if c.BindJSON(&token) != nil {
-		c.JSON(400, gin.H{"error": "Error binding JSON"})
-		return
-	}
-	if token["token"] == "" {
-		c.JSON(400, gin.H{"error": "Token is required"})
-		return
-	}
-	msg := checkToken(token["token"], token["username"])
+	token := c.Param("token")
+	username := c.Param("user")
+	msg := checkToken(token, username)
 	if msg != "" {
 		c.JSON(401, gin.H{"error": msg})
 		return

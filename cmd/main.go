@@ -15,10 +15,10 @@ import (
 func main() {
 	api := gin.Default()
 	config.Load("config/config.toml")
-
 	api.GET("/version", getVersion)
 	api.POST("/signup", signup)
 	api.GET("/login", login)
+	api.POST("/:username/:doc_id", upload)
 	log.Println("Iniciando HTTPS en puerto 8080.....")
 	api.Run(":8080")
 
@@ -93,17 +93,49 @@ func login(c *gin.Context) {
 }
 
 func upload(c *gin.Context) {
-	valid, json, msg := checkBody_file(c)
+	username := c.Param("username")
+	doc_id := c.Param("doc_id")
+	username = api.Encrypt_hash(username)
+	valid, json_file, msg := checkBody_file(c)
 	if !valid {
 		c.JSON(400, gin.H{"error":msg})
 		return
 	}
 	valid, token := checkHeader(c)
 	if !valid {
-		c.JSON(400, gin.H{"error":"token not found"})
+		c.JSON(400, gin.H{"error":"empty token"})
 		return
 	}
-	
+	response, err := http.Get("http://localhost:8082/check/"+username+"/"+token)
+	if err != nil {
+		log.Printf("connection error %v",err)
+		c.JSON(500, gin.H{"error":"Connection error"})
+		return
+	}
+	defer response.Body.Close()
+	if response.StatusCode != 204 {
+		c.JSON(response.StatusCode, gin.H{"error":"invalid token"})
+		return
+	}
+	body,err := json.Marshal(json_file)
+	if err != nil {
+		c.JSON(500, gin.H{"error":"error en la creacion del json"})
+		return
+	}
+	response, err = http.Post("http://localhost:8083/"+username+"/"+doc_id, "application/json",bytes.NewBuffer(body))
+	if err != nil {
+		log.Printf("connection error %v",err)
+		c.JSON(500, gin.H{"error":"Connection error"})
+		return
+	}
+	defer response.Body.Close()
+	var result map[string]string
+	json.NewDecoder(response.Body).Decode(&result)
+	if response.StatusCode != 201 {
+		c.JSON(response.StatusCode, gin.H{"error":result["error"]})
+		return
+	}
+	c.JSON(201, gin.H{"size":result["size"]})
 }
 
 
