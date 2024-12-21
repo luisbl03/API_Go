@@ -16,6 +16,7 @@ func main() {
     api := gin.Default()
     api.GET("/version", version)
     api.POST("/signup", signup)
+    api.GET("/login", login)
 
 
     api.Run(":8080")
@@ -44,6 +45,36 @@ func signup(c *gin.Context) {
         return
     }
     response, err := http.Post("http://localhost:8081/signup", "application/json", bytes.NewBuffer(jsonData))
+    if err != nil {
+        c.JSON(500, gin.H{"error": "could not connect to auth service"})
+        return
+    }
+    defer response.Body.Close()
+    var data map[string]string
+    err = json.NewDecoder(response.Body).Decode(&data)
+    if err != nil {
+        c.JSON(500, gin.H{"error": "internal error, json decode"})
+        return
+    }
+    c.JSON(response.StatusCode, data)
+}
+
+func login(c *gin.Context) {
+    valid, user, message := checkBody_user(c)
+    if !valid {
+        c.JSON(400, gin.H{"error": message})
+        return
+    }
+
+    user.USERNAME = api.Encrypt_hash(user.USERNAME)
+    user.PASSWORD = api.Encrypt_hash(user.PASSWORD)
+
+    jsonData, err := json.Marshal(user)
+    if err != nil {
+        c.JSON(500, gin.H{"error": "internal error, json marshal"})
+        return
+    }
+    response, err := http.Post("http://localhost:8081/login", "application/json", bytes.NewBuffer(jsonData))
     if err != nil {
         c.JSON(500, gin.H{"error": "could not connect to auth service"})
         return
