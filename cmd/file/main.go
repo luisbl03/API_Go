@@ -13,6 +13,7 @@ func main() {
 	api := gin.Default()
 	api.POST("/:username/:doc_id", upload)
 	api.GET("/:username/:doc_id", get)
+	api.PUT("/:username/:doc_id", update)
 	api.Run("127.0.0.1:8082")
 	
 }
@@ -46,6 +47,24 @@ func get(c *gin.Context) {
 		return
 	}
 	c.JSON(200, json)
+}
+
+func update(c *gin.Context) {
+	username := c.Param("username")
+	doc_id := c.Param("doc_id")
+	var json models.Json
+	err := c.BindJSON(&json)
+	if err != nil {
+		c.JSON(400, gin.H{"error":"invalid json"})
+		return
+	}
+	status := api.Update(doc_id,username,json)
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
+		return
+	}
+	c.JSON(200, gin.H{"size":status})
 }
 
 func Status(status int) (string, int) {

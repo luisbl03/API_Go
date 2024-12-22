@@ -20,6 +20,7 @@ func main() {
     api.GET("/login", login)
     api.POST("/:username/:doc_id", upload)
     api.GET("/:username/:doc_id", getFile)
+    api.PUT("/:username/:doc_id", update)
 
     api.Run(":8080")
 }
@@ -92,84 +93,15 @@ func login(c *gin.Context) {
 }
 
 func upload(c *gin.Context) {
-    valid, json_data, msg := checkBody_file(c)
-    if !valid {
-        c.JSON(400, gin.H{"error": msg})
-        return
-    }
-    valid, token := checkHeader(c)
-    if !valid {
-        c.JSON(400, gin.H{"error": "empty token"})
-        return
-    }
-    username := c.Param("username")
-    username = api.Encrypt_hash(username)
-    doc_id := c.Param("doc_id")
-    response, err := http.Get("http://localhost:8081/"+username+"/"+token)
-    if err != nil {
-        c.JSON(500, gin.H{"error": "could not connect to auth service"})
-        return 
-    }
-    defer response.Body.Close()
-    if response.StatusCode != 204 {
-        body, _ := io.ReadAll(response.Body)
-        c.JSON(response.StatusCode, gin.H{"error": string(body)})
-        return
-    }
-    jsonData, err := json.Marshal(json_data)
-    if err != nil {
-        c.JSON(500, gin.H{"error": "internal error, json marshal"})
-        return
-    }
-    response, err = http.Post("http://localhost:8082/"+username+"/"+doc_id, "application/json", bytes.NewBuffer(jsonData))
-    if err != nil {
-        c.JSON(500, gin.H{"error": "could not connect to file service"})
-        return
-    }
-    defer response.Body.Close()
-    var data map[string]int
-    err = json.NewDecoder(response.Body).Decode(&data)
-    if err != nil {
-        c.JSON(500, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(response.StatusCode, data)
-   
+    FileRequest(c, "POST")
 }
 
 func getFile(c * gin.Context) {
-    valid, token := checkHeader(c)
-    if !valid {
-        c.JSON(400, gin.H{"error": "empty token"})
-        return
-    }
-    username := c.Param("username")
-    username = api.Encrypt_hash(username)
-    doc_id := c.Param("doc_id")
-    response, err := http.Get("http://localhost:8081/"+username+"/"+token)
-    if err != nil {
-        c.JSON(500, gin.H{"error": "could not connect to auth service"})
-        return 
-    }
-    defer response.Body.Close()
-    if response.StatusCode != 204 {
-        body, _ := io.ReadAll(response.Body)
-        c.JSON(response.StatusCode, gin.H{"error": string(body)})
-        return
-    }
-    response, err = http.Get("http://localhost:8082/"+username+"/"+doc_id)
-    if err != nil {
-        c.JSON(500, gin.H{"error": "could not connect to file service"})
-        return
-    }
-    defer response.Body.Close()
-    var jsonData models.Json
-    err = json.NewDecoder(response.Body).Decode(&jsonData)
-    if err != nil {
-        c.JSON(500, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(response.StatusCode, jsonData)
+    FileRequest(c, "GET")
+}
+
+func update(c *gin.Context) {
+    FileRequest(c, "PUT")
 }
 
 func checkBody_user(c *gin.Context) (bool,models.User,string) {
@@ -214,4 +146,92 @@ func checkHeader(c *gin.Context) (bool,string) {
         return false, ""
     }
     return true, token
+}
+
+func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
+    username := c.Param("username")
+    doc_id := c.Param("doc_id")
+    username = api.Encrypt_hash(username)
+
+    valid, token := checkHeader(c)
+    if !valid {
+        c.JSON(400, gin.H{"error": "empty token"})
+        return 
+    }
+
+    response, err := http.Get("http://localhost:8081/"+username+"/"+token)
+    if err != nil {
+        c.JSON(500, gin.H{"error": "could not connect to auth service"})
+        return
+    }
+    defer response.Body.Close()
+    if response.StatusCode != 204 {
+        body, _ := io.ReadAll(response.Body)
+        c.JSON(response.StatusCode, gin.H{"error": string(body)})
+        return
+    }
+
+    if method == "GET" {
+        response, err = http.Get("http://localhost:8082/"+username+"/"+doc_id)
+        if err != nil {
+            c.JSON(500, gin.H{"error": "could not connect to file service"})
+            return
+        }
+        defer response.Body.Close()
+        var jsonData models.Json
+        err = json.NewDecoder(response.Body).Decode(&jsonData)
+        if err != nil {
+            c.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
+        c.JSON(response.StatusCode, jsonData)
+        return
+    }
+    valid, json_data, message := checkBody_file(c)
+    if !valid {
+        c.JSON(400, gin.H{"error": message})
+        return
+    }
+    jsonData, err := json.Marshal(json_data)
+    if err != nil {
+        c.JSON(500, gin.H{"error": "internal error, json marshal"})
+        return
+    }
+    if method == "POST" {
+        response, err = http.Post("http://localhost:8082/"+username+"/"+doc_id, "application/json", bytes.NewBuffer(jsonData))
+        if err != nil {
+            c.JSON(500, gin.H{"error": "could not connect to file service"})
+            return
+        }
+        defer response.Body.Close()
+        var data map[string]int
+        err = json.NewDecoder(response.Body).Decode(&data)
+        if err != nil {
+            c.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
+        c.JSON(response.StatusCode, data)
+        return
+    }
+    if method == "PUT" {
+        req, err := http.NewRequest("PUT", "http://localhost:8082/"+username+"/"+doc_id, bytes.NewBuffer(jsonData))
+        if err != nil {
+            c.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
+        req.Header.Set("Content-Type", "application/json")
+        response, err = http.DefaultClient.Do(req)
+        if err != nil {
+            c.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
+        defer response.Body.Close()
+        var data map[string]int
+        err = json.NewDecoder(response.Body).Decode(&data)
+        if err != nil {
+            c.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
+        c.JSON(response.StatusCode, data)
+    }
 }
