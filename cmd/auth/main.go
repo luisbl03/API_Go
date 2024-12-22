@@ -15,9 +15,10 @@ func main() {
 	api := gin.Default()
 	api.POST("/signup", signup)
 	api.POST("/login", login)
+	api.GET("/:username/:token", checkToken)
 
 
-	api.Run(":8081")
+	api.Run("localhost:8081")
 }
 
 func signup(c *gin.Context) {
@@ -68,6 +69,24 @@ func login(c *gin.Context) {
 	}
 	tokens = append(tokens, token)
 	c.JSON(200, gin.H{"token":token.TOKEN})
+}
+
+func checkToken(c *gin.Context) {
+	username := c.Param("username")
+	token_code := c.Param("token")
+	for _, t := range tokens {
+		if t.User == username {
+			if t.TOKEN == token_code {
+				if models.IsAlive(t) {
+					c.JSON(204, gin.H{})
+					return
+				}
+				c.JSON(498, gin.H{"error":"token expired"})
+				return
+			}
+		}
+	}
+	c.JSON(498, gin.H{"error":"not exists token"})
 }
 
 
