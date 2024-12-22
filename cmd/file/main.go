@@ -12,6 +12,7 @@ func main() {
 	config.Load("config/config.toml")
 	api := gin.Default()
 	api.POST("/:username/:doc_id", upload)
+	api.GET("/:username/:doc_id", get)
 	api.Run("127.0.0.1:8082")
 	
 }
@@ -33,6 +34,18 @@ func upload(c *gin.Context) {
 	}
 	c.JSON(201, gin.H{"size":status})
 
+}
+
+func get(c *gin.Context) {
+	username := c.Param("username")
+	doc_id := c.Param("doc_id")
+	json, status := api.GetFile(doc_id, username)
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
+		return
+	}
+	c.JSON(200, json)
 }
 
 func Status(status int) (string, int) {

@@ -19,6 +19,7 @@ func main() {
     api.POST("/signup", signup)
     api.GET("/login", login)
     api.POST("/:username/:doc_id", upload)
+    api.GET("/:username/:doc_id", getFile)
 
     api.Run(":8080")
 }
@@ -113,6 +114,7 @@ func upload(c *gin.Context) {
     if response.StatusCode != 204 {
         body, _ := io.ReadAll(response.Body)
         c.JSON(response.StatusCode, gin.H{"error": string(body)})
+        return
     }
     jsonData, err := json.Marshal(json_data)
     if err != nil {
@@ -133,6 +135,41 @@ func upload(c *gin.Context) {
     }
     c.JSON(response.StatusCode, data)
    
+}
+
+func getFile(c * gin.Context) {
+    valid, token := checkHeader(c)
+    if !valid {
+        c.JSON(400, gin.H{"error": "empty token"})
+        return
+    }
+    username := c.Param("username")
+    username = api.Encrypt_hash(username)
+    doc_id := c.Param("doc_id")
+    response, err := http.Get("http://localhost:8081/"+username+"/"+token)
+    if err != nil {
+        c.JSON(500, gin.H{"error": "could not connect to auth service"})
+        return 
+    }
+    defer response.Body.Close()
+    if response.StatusCode != 204 {
+        body, _ := io.ReadAll(response.Body)
+        c.JSON(response.StatusCode, gin.H{"error": string(body)})
+        return
+    }
+    response, err = http.Get("http://localhost:8082/"+username+"/"+doc_id)
+    if err != nil {
+        c.JSON(500, gin.H{"error": "could not connect to file service"})
+        return
+    }
+    defer response.Body.Close()
+    var jsonData models.Json
+    err = json.NewDecoder(response.Body).Decode(&jsonData)
+    if err != nil {
+        c.JSON(500, gin.H{"error": err.Error()})
+        return
+    }
+    c.JSON(response.StatusCode, jsonData)
 }
 
 func checkBody_user(c *gin.Context) (bool,models.User,string) {

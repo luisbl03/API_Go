@@ -5,6 +5,7 @@ import (
 	"os"
 	"github.com/luideoz/API_Go/constants"
 	"github.com/luideoz/API_Go/models"
+	"log"
 )
 
 const (
@@ -37,6 +38,7 @@ func Upload(data models.Json, path string) int {
 }
 
 func GetFile(path string) (models.Json, int) {
+	log.Println(path)
 	_,err := os.Stat(path)
 	if err != nil {
 		return models.Json{}, constants.NOT_FOUND
