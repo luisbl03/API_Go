@@ -2,7 +2,7 @@ package models
 
 import (
 	"crypto/rand"
-	"encoding/base64"
+	"encoding/base32"
 	"time"
 	"github.com/luideoz/API_Go/constants"
 )
@@ -25,7 +25,7 @@ func CreateToken(user string) (Token, int) {
 	if err != nil {
 		return token, constants.ERROR
 	}
-	token.TOKEN = base64.StdEncoding.EncodeToString(bytes)
+	token.TOKEN = base32.StdEncoding.EncodeToString(bytes)
 	// le ponemos de duracion 2 minutos
 	token.EXPIRATION = time.Now().Add(time.Minute * 2)
 	return token, constants.OK
