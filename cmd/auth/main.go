@@ -15,7 +15,6 @@ func main() {
 	config.Load("config/config.toml")
 	tokens = [] models.Token{}
 	api := gin.Default()
-	api.GET("/version", getVersion)
 	api.POST("/signup", signup)
 	api.POST("/login", login)
 	api.GET("/:username/:token", checkToken)
@@ -24,12 +23,7 @@ func main() {
 	api.Run("localhost:8081")
 }
 
-func getVersion(c *gin.Context) {
-	c.Request.Header.Set("Content-Type", "application/json")
-	log.Println("GET /version")
-	c.JSON(200, gin.H{"version":"1.0.0"})
-}
-
+//signup -> endpoint para registrar un usuario
 func signup(c *gin.Context) {
 	var user models.User
 	err := c.BindJSON(&user)
@@ -57,6 +51,7 @@ func signup(c *gin.Context) {
 	c.JSON(201, gin.H{"token":token.TOKEN})
 }
 
+//login -> endpoint para loguear un usuario
 func login(c *gin.Context) {
 	var user models.User
 	err := c.BindJSON(&user)
@@ -83,6 +78,7 @@ func login(c *gin.Context) {
 	c.JSON(200, gin.H{"token":token.TOKEN})
 }
 
+//checkToken -> endpoint para comprobar si un token es valido
 func checkToken(c *gin.Context) {
 	username := c.Param("username")
 	log.Println(username)
@@ -106,7 +102,7 @@ func checkToken(c *gin.Context) {
 	c.JSON(498, gin.H{"error":"not exists token"})
 }
 
-
+// Status -> devuelve el mensaje y el codigo de estado
 func Status(status int) (string, int) {
 	if status == constants.ERROR {
 		return "internal error", 500
@@ -126,6 +122,7 @@ func Status(status int) (string, int) {
 	return "", 200
 }
 
+//deleteToken -> funcion para borrar un token
 func deleteToken(username string) {
 	for i, t := range tokens {
 		if t.User == username {

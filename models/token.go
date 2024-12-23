@@ -14,6 +14,7 @@ type Token struct {
 	User string
 }
 
+
 func IsAlive(token Token) bool {
 	return token.EXPIRATION.After(time.Now())
 }

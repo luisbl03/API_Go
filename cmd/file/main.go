@@ -22,6 +22,7 @@ func main() {
 	
 }
 
+//upload -> endpoint para subir un archivo
 func upload(c *gin.Context) {
 	var json models.Json
 	err := c.BindJSON(&json)
@@ -41,6 +42,7 @@ func upload(c *gin.Context) {
 
 }
 
+//getFile -> endpoint para obtener un archivo
 func get(c *gin.Context) {
 	username := c.Param("username")
 	doc_id := c.Param("doc_id")
@@ -53,6 +55,7 @@ func get(c *gin.Context) {
 	c.JSON(200, json)
 }
 
+//update -> endpoint para actualizar un archivo
 func update(c *gin.Context) {
 	username := c.Param("username")
 	doc_id := c.Param("doc_id")
@@ -71,6 +74,7 @@ func update(c *gin.Context) {
 	c.JSON(200, gin.H{"size":status})
 }
 
+//delete -> endpoint para borrar un archivo
 func delete(c *gin.Context) {
 	username := c.Param("username")
 	doc_id := c.Param("doc_id")
@@ -83,6 +87,7 @@ func delete(c *gin.Context) {
 	c.JSON(204, gin.H{})
 }
 
+//list -> endpoint para listar los archivos de un usuario
 func list(c *gin.Context) {
 	username := c.Param("username")
 	list, status := api.List_Files(username)
@@ -95,6 +100,7 @@ func list(c *gin.Context) {
 	c.JSON(200, gin.H{"files":list})
 }
 
+// Status -> devuelve el mensaje y el codigo de estado
 func Status(status int) (string, int) {
 	if status == constants.ERROR {
 		return "internal error", 500
