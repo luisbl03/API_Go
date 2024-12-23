@@ -1,11 +1,13 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
-	"github.com/luideoz/API_Go/models"
 	"github.com/luideoz/API_Go/api"
-	"github.com/luideoz/API_Go/constants"
 	"github.com/luideoz/API_Go/config"
+	"github.com/luideoz/API_Go/constants"
+	"github.com/luideoz/API_Go/models"
 )
 
 var tokens [] models.Token
@@ -73,11 +75,16 @@ func login(c *gin.Context) {
 
 func checkToken(c *gin.Context) {
 	username := c.Param("username")
+	log.Println(username)
 	token_code := c.Param("token")
+	log.Println(token_code)
 	for _, t := range tokens {
 		if t.User == username {
+			log.Println(t.User  + " " + username)
 			if t.TOKEN == token_code {
+				log.Println(t.TOKEN + " " + token_code)
 				if models.IsAlive(t) {
+					log.Println("alive")
 					c.JSON(204, gin.H{})
 					return
 				}

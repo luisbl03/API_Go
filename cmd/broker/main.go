@@ -220,7 +220,8 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
             return
         }
         req.Header.Set("Content-Type", "application/json")
-        response, err = http.DefaultClient.Do(req)
+        client := &http.Client{}
+        response, err = client.Do(req)
         if err != nil {
             c.JSON(500, gin.H{"error": err.Error()})
             return
