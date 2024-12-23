@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/luideoz/API_Go/api"
 	"github.com/luideoz/API_Go/config"
@@ -15,6 +17,7 @@ func main() {
 	api.GET("/:username/:doc_id", get)
 	api.PUT("/:username/:doc_id", update)
 	api.DELETE("/:username/:doc_id", delete)
+	api.GET("/:username", list)
 	api.Run("127.0.0.1:8082")
 	
 }
@@ -78,6 +81,18 @@ func delete(c *gin.Context) {
 		return
 	}
 	c.JSON(204, gin.H{})
+}
+
+func list(c *gin.Context) {
+	username := c.Param("username")
+	list, status := api.List_Files(username)
+	log.Println(list)
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
+		return
+	}
+	c.JSON(200, gin.H{"files":list})
 }
 
 func Status(status int) (string, int) {

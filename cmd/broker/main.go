@@ -11,6 +11,9 @@ import (
 	"github.com/luideoz/API_Go/models"
     "io"
 )
+type FileResponse struct {
+    Files []models.File `json:"files"`
+}
 
 func main() {
     config.Load("config/config.toml")
@@ -22,6 +25,7 @@ func main() {
     api.GET("/:username/:doc_id", getFile)
     api.PUT("/:username/:doc_id", update)
     api.DELETE("/:username/:doc_id", delete)
+    api.GET(("/:username/_all_docs"), listFiles)
 
     api.Run(":8080")
 }
@@ -107,6 +111,10 @@ func update(c *gin.Context) {
 
 func delete(c *gin.Context) {
     FileRequest(c, "DELETE")
+}
+
+func listFiles(c *gin.Context) {
+    FileRequest(c, "LIST")
 }
 
 func checkBody_user(c *gin.Context) (bool,models.User,string) {
@@ -211,6 +219,23 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
             return
         }
         c.JSON(response.StatusCode, gin.H{})
+        return
+    }
+
+    if method == "LIST" {
+        response, err = http.Get("http://localhost:8082/"+username)
+        if err != nil {
+            c.JSON(500, gin.H{"error": "could not connect to file service"})
+            return
+        }
+        defer response.Body.Close()
+        var jsonFiles FileResponse
+        err = json.NewDecoder(response.Body).Decode(&jsonFiles)
+        if err != nil {
+            c.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
+        c.JSON(response.StatusCode, gin.H{"files": jsonFiles.Files})
         return
     }
 
