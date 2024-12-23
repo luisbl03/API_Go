@@ -14,6 +14,7 @@ func main() {
 	api.POST("/:username/:doc_id", upload)
 	api.GET("/:username/:doc_id", get)
 	api.PUT("/:username/:doc_id", update)
+	api.DELETE("/:username/:doc_id", delete)
 	api.Run("127.0.0.1:8082")
 	
 }
@@ -65,6 +66,18 @@ func update(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{"size":status})
+}
+
+func delete(c *gin.Context) {
+	username := c.Param("username")
+	doc_id := c.Param("doc_id")
+	status := api.Delete(doc_id,username)
+	msg, code := Status(status)
+	if msg != "" {
+		c.JSON(code, gin.H{"error":msg})
+		return
+	}
+	c.JSON(204, gin.H{})
 }
 
 func Status(status int) (string, int) {

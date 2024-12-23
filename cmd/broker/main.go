@@ -21,6 +21,7 @@ func main() {
     api.POST("/:username/:doc_id", upload)
     api.GET("/:username/:doc_id", getFile)
     api.PUT("/:username/:doc_id", update)
+    api.DELETE("/:username/:doc_id", delete)
 
     api.Run(":8080")
 }
@@ -102,6 +103,10 @@ func getFile(c * gin.Context) {
 
 func update(c *gin.Context) {
     FileRequest(c, "PUT")
+}
+
+func delete(c *gin.Context) {
+    FileRequest(c, "DELETE")
 }
 
 func checkBody_user(c *gin.Context) (bool,models.User,string) {
@@ -187,6 +192,28 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
         c.JSON(response.StatusCode, jsonData)
         return
     }
+    if method == "DELETE" {
+        req, err := http.NewRequest("DELETE", "http://localhost:8082/"+username+"/"+doc_id, nil)
+        if err != nil {
+            c.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
+        client := &http.Client{}
+        response, err = client.Do(req)
+        if err != nil {
+            c.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
+        defer response.Body.Close()
+        if response.StatusCode != 204 {
+            body, _ := io.ReadAll(response.Body)
+            c.JSON(response.StatusCode, gin.H{"error": string(body)})
+            return
+        }
+        c.JSON(response.StatusCode, gin.H{})
+        return
+    }
+
     valid, json_data, message := checkBody_file(c)
     if !valid {
         c.JSON(400, gin.H{"error": message})

@@ -15,12 +15,19 @@ func main() {
 	config.Load("config/config.toml")
 	tokens = [] models.Token{}
 	api := gin.Default()
+	api.GET("/version", getVersion)
 	api.POST("/signup", signup)
 	api.POST("/login", login)
 	api.GET("/:username/:token", checkToken)
 
 
 	api.Run("localhost:8081")
+}
+
+func getVersion(c *gin.Context) {
+	c.Request.Header.Set("Content-Type", "application/json")
+	log.Println("GET /version")
+	c.JSON(200, gin.H{"version":"1.0.0"})
 }
 
 func signup(c *gin.Context) {
@@ -64,12 +71,15 @@ func login(c *gin.Context) {
 		return
 	}
 	deleteToken(user.USERNAME) //reiniciamos sesion y asi evitamos conflictos con los tokens
+	log.Println("token delete")
 	token, status := models.CreateToken(user.USERNAME)
 	if status == constants.ERROR {
+		log.Println("error token")
 		c.JSON(500, gin.H{"error":"internal error (token)"})
 		return
 	}
 	tokens = append(tokens, token)
+	log.Println("token append")
 	c.JSON(200, gin.H{"token":token.TOKEN})
 }
 
