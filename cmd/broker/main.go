@@ -137,7 +137,7 @@ func AuthRequest(c *gin.Context, method string) {
         return
     }
     if method == "POST" {
-        response, err := http.Post("http://localhost:8081/signup", "application/json", bytes.NewBuffer(jsonData))
+        response, err := http.Post("http://10.0.2.3:8081/signup", "application/json", bytes.NewBuffer(jsonData))
         if err != nil {
             c.JSON(500, gin.H{"error": "could not connect to auth service"})
             return
@@ -152,7 +152,7 @@ func AuthRequest(c *gin.Context, method string) {
         c.JSON(response.StatusCode, data)
         return
     }
-    response, err := http.Post("http://localhost:8081/login", "application/json", bytes.NewBuffer(jsonData))
+    response, err := http.Post("http://10.0.2.3:8081/login", "application/json", bytes.NewBuffer(jsonData))
     if err != nil {
         c.JSON(500, gin.H{"error": "could not connect to auth service"})
         return
@@ -184,7 +184,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
 
     //peticion al servicio de autenticacion para la comprobacion del token
-    response, err := http.Get("http://localhost:8081/"+username+"/"+token)
+    response, err := http.Get("http://10.02.3:8081/"+username+"/"+token)
     if err != nil {
         c.JSON(500, gin.H{"error": "could not connect to auth service"})
         return
@@ -198,7 +198,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
 
     // peticion get al servicio de archivos
     if method == "GET" {
-        response, err = http.Get("http://localhost:8082/"+username+"/"+doc_id)
+        response, err = http.Get("http://10.0.2.4:8082/"+username+"/"+doc_id)
         if err != nil {
             c.JSON(500, gin.H{"error": "could not connect to file service"})
             return
@@ -215,7 +215,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
     //peticion delete al servicio de archivos
     if method == "DELETE" {
-        req, err := http.NewRequest("DELETE", "http://localhost:8082/"+username+"/"+doc_id, nil)
+        req, err := http.NewRequest("DELETE", "http://10.0.2.4:8082/"+username+"/"+doc_id, nil)
         if err != nil {
             c.JSON(500, gin.H{"error": err.Error()})
             return
@@ -237,7 +237,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
     //peticion get de los archivos de un usuario al servicio de archivos
     if method == "LIST" {
-        response, err = http.Get("http://localhost:8082/"+username)
+        response, err = http.Get("http://10.0.2.4:8082/"+username)
         if err != nil {
             c.JSON(500, gin.H{"error": "could not connect to file service"})
             return
@@ -266,7 +266,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
     //peticion post al servicio de archivos
     if method == "POST" {
-        response, err = http.Post("http://localhost:8082/"+username+"/"+doc_id, "application/json", bytes.NewBuffer(jsonData))
+        response, err = http.Post("http://10.0.2.4:8082/"+username+"/"+doc_id, "application/json", bytes.NewBuffer(jsonData))
         if err != nil {
             c.JSON(500, gin.H{"error": "could not connect to file service"})
             return
@@ -283,7 +283,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
     //peticion put al servicio de archivos
     if method == "PUT" {
-        req, err := http.NewRequest("PUT", "http://localhost:8082/"+username+"/"+doc_id, bytes.NewBuffer(jsonData))
+        req, err := http.NewRequest("PUT", "http://10.0.2.4:8082/"+username+"/"+doc_id, bytes.NewBuffer(jsonData))
         if err != nil {
             c.JSON(500, gin.H{"error": err.Error()})
             return
