@@ -184,7 +184,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
 
     //peticion al servicio de autenticacion para la comprobacion del token
-    response, err := http.Get("http://10.02.3:8081/"+username+"/"+token)
+    response, err := http.Get("http://10.0.2.3:8081/"+username+"/"+token)
     if err != nil {
         c.JSON(500, gin.H{"error": "could not connect to auth service"})
         return

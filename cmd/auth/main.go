@@ -20,7 +20,7 @@ func main() {
 	api.GET("/:username/:token", checkToken)
 
 
-	api.Run("localhost:8081")
+	api.Run(":8081")
 }
 
 //signup -> endpoint para registrar un usuario
