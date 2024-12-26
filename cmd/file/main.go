@@ -18,7 +18,7 @@ func main() {
 	api.PUT("/:username/:doc_id", update)
 	api.DELETE("/:username/:doc_id", delete)
 	api.GET("/:username", list)
-	api.Run(":8082")
+	api.Run(":5000")
 	
 }
 
