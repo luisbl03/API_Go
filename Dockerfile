@@ -13,15 +13,18 @@ RUN apt-get update && apt-get install -y \
     curl \
     sudo \
     golang \
+    ufw \
     orphan-sysvinit-scripts \
     && apt-get clean
 
 COPY assets/sshd_config /etc/ssh/sshd_config
+
 RUN chmod 644 /etc/ssh/sshd_config && \
     chown root:root /etc/ssh/sshd_config && \
     useradd -ms /bin/bash op && \
     mkdir /home/op/.ssh && \
     chmod 700 /home/op/.ssh
+
 COPY assets/authorized_keys.op /home/op/.ssh/authorized_keys
 RUN chown op:op -R /home/op
     

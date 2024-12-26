@@ -7,5 +7,3 @@ COPY entrypoints.sh /app/entrypoint.sh
 WORKDIR /app
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]
-
-CMD ["/app/broker"]

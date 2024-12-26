@@ -10,9 +10,10 @@ build:
 	docker build --rm -f cmd/broker/Dockerfile --tag miubuntu-broker cmd/broker
 	docker build --rm -f cmd/auth/Dockerfile --tag miubuntu-auth cmd/auth
 	docker build --rm -f cmd/file/Dockerfile --tag miubuntu-file cmd/file
+	docker build --rm -f router/Dockerfile --tag miubuntu-router router
 
 remove:
-	docker stop broker auth file
+	docker stop broker auth file router
 	docker rmi miubuntu
 	docker rmi miubuntu-broker
 	docker rmi miubuntu-auth
@@ -30,3 +31,7 @@ container: network build
 	docker run --privileged --rm -ti -d \
 		--name file --hostname file --ip 10.0.2.4 --network srv \
 		miubuntu-file
+	
+	docker run --privileged --rm -ti -d --name router --hostname router miubuntu-router
+	docker network connect dmz router
+	docker network connect srv router
