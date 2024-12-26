@@ -13,6 +13,13 @@ import (
 func Upload(username string,json models.Json, id string) int {
 	archive := id + ".json"
 	path := path.Join(config.Configs.Storage_root, username, archive)
+	//si no existe el directorio, lo crea
+	if _, err := os.Stat(config.Configs.Storage_root + "/" + username); os.IsNotExist(err) {
+		status := Root(username)
+		if status != constants.OK {
+			return status
+		}
+	}
 	status := repository.Upload(json, path)
 	return status
 }
