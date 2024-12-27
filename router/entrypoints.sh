@@ -41,6 +41,8 @@ iptables -A FORWARD -i eth3 -o eth1 -p tcp --dport 22 -j ACCEPT
 iptables -A FORWARD -i eth1 -o eth3 -p tcp --sport 22 -j ACCEPT
 
 iptables -A INPUT -p tcp --dport 22 -i eth2 -s 10.0.3.3 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -s 10.0.3.3 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -i eth3 -s 10.0.3.3 -j ACCEPT
 
 #http
 
