@@ -17,8 +17,13 @@ iptables -A INPUT -s 10.0.1.2 -p tcp --dport 5000 -j ACCEPT
 iptables -A INPUT -s 10.0.2.3 -p tcp --dport 5000 -j ACCEPT
 iptables -A INPUT -s 10.0.2.4 -p tco --dport 5000 -j ACCEPT
 
+#http
 iptables -A INPUT -p tcp --dport 80 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -p tcp --sport 80 -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+#https
+iptables -A INPUT -p tcp --dport 443 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p tcp --sport 443 -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 iptables -A INPUT -j LOG --log-prefix "INPUT DROP: " --log-level 4
