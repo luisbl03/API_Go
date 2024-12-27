@@ -23,6 +23,10 @@ iptables -A INPUT -p tcp --sport 80 -m state --state ESTABLISHED,RELATED -j ACCE
 iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 iptables -A INPUT -j LOG --log-prefix "INPUT DROP: " --log-level 4
 
+#ssh
+iptables -A INPUT -p tcp --dport 22 -s 10.0.3.0/24 -j ACCEPT
+iptables -A INPUT -p tcp --sport 22 -s 10.0.3.0/24 -j ACCEPT
+
 service ssh start
 service rsyslog start
 

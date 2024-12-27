@@ -20,6 +20,10 @@ iptables -A INPUT -p tcp --sport 80 -m state --state ESTABLISHED,RELATED -j ACCE
 service ssh start
 service rsyslog start
 
+#ssh
+iptables -A INPUT -p tcp --dport 22 -s 10.0.3.0/24 -j ACCEPT
+iptables -A INPUT -p tcp --sport 22 -s 10.0.3.0/24 -j ACCEPT
+
 ip route del default
 ip route add default via 10.0.2.2 dev eth0
 
