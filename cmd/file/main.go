@@ -18,7 +18,15 @@ func main() {
 	api.PUT("/:username/:doc_id", update)
 	api.DELETE("/:username/:doc_id", delete)
 	api.GET("/:username", list)
-	api.Run(":5000")
+
+	certFile := "certs/fullchain.pem"
+	keyFile := "certs/privkey.pem"
+
+	if err := api.RunTLS(":5000", certFile, keyFile); err != nil {
+        log.Fatalf("Error iniciando el servidor HTTPS: %s", err)
+    }
+
+	//api.Run(":80")
 	
 }
 

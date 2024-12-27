@@ -13,14 +13,21 @@ import (
 var tokens [] models.Token
 func main() {
 	config.Load("config/config.toml")
+	//importamos los certificados
+	certFile := "certs/fullchain.pem"
+	keyFile := "certs/privkey.pem"
+
 	tokens = [] models.Token{}
 	api := gin.Default()
 	api.POST("/signup", signup)
 	api.POST("/login", login)
 	api.GET("/:username/:token", checkToken)
 
+	if err := api.RunTLS(":5000", certFile, keyFile); err != nil {
+        log.Fatalf("Error iniciando el servidor HTTPS: %s", err)
+    }
 
-	api.Run(":5000")
+	//api.Run(":80")
 }
 
 //signup -> endpoint para registrar un usuario

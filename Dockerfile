@@ -25,7 +25,6 @@ RUN chmod 644 /etc/ssh/sshd_config && \
     mkdir /home/op/.ssh && \
     chmod 700 /home/op/.ssh
 
-COPY assets/hosts /etc/hosts
 
 COPY assets/authorized_keys.op /home/op/.ssh/authorized_keys
 RUN chown op:op -R /home/op

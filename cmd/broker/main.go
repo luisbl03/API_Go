@@ -3,7 +3,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-
+    "log"
 	"github.com/gin-gonic/gin"
 	"github.com/luideoz/API_Go/api"
 	"github.com/luideoz/API_Go/config"
@@ -28,7 +28,14 @@ func main() {
     api.DELETE("/:username/:doc_id", delete)
     api.GET(("/:username/_all_docs"), listFiles)
 
-    api.Run(":5000")
+    certFile := "certs/fullchain.pem"
+    keyFile := "certs/privkey.pem"
+
+    if err := api.RunTLS(":5000", certFile, keyFile); err != nil {
+        log.Fatalf("Error iniciando el servidor HTTPS: %s", err)
+    }
+
+	//api.Run(":80")
 }
 
 //version -> devuelve la version del broker
@@ -122,6 +129,7 @@ func checkHeader(c *gin.Context) (bool,string) {
 
 //AuthRequest -> funcion para realizar peticiones a los endpoints de autenticacion
 func AuthRequest(c *gin.Context, method string) {
+    client := &http.Client{}
     valid, user, message := checkBody_user(c)
     if !valid {
         c.JSON(400, gin.H{"error": message})
@@ -137,7 +145,7 @@ func AuthRequest(c *gin.Context, method string) {
         return
     }
     if method == "POST" {
-        response, err := http.Post("http://10.0.2.3:5000/signup", "application/json", bytes.NewBuffer(jsonData))
+        response, err := client.Post("https://lauth.duckdns.org:5000/signup", "application/json", bytes.NewBuffer(jsonData))
         if err != nil {
             c.JSON(500, gin.H{"error": "could not connect to auth service"})
             return
@@ -152,7 +160,7 @@ func AuthRequest(c *gin.Context, method string) {
         c.JSON(response.StatusCode, data)
         return
     }
-    response, err := http.Post("http://10.0.2.3:5000/login", "application/json", bytes.NewBuffer(jsonData))
+    response, err := client.Post("https://lauth.duckdns.org:5000/login", "application/json", bytes.NewBuffer(jsonData))
     if err != nil {
         c.JSON(500, gin.H{"error": "could not connect to auth service"})
         return
@@ -170,7 +178,7 @@ func AuthRequest(c *gin.Context, method string) {
 
 //FileRequest -> funcion para realizar peticiones a los endpoints de archivo
 func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
-
+    client := &http.Client{}
     //obtenecion de los parametros y encriptacion del nombre de usuario
     username := c.Param("username")
     doc_id := c.Param("doc_id")
@@ -184,7 +192,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
 
     //peticion al servicio de autenticacion para la comprobacion del token
-    response, err := http.Get("http://10.0.2.3:5000/"+username+"/"+token)
+    response, err := client.Get("https://lauth.duckdns.org:5000/"+username+"/"+token)
     if err != nil {
         c.JSON(500, gin.H{"error": "could not connect to auth service"})
         return
@@ -198,7 +206,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
 
     // peticion get al servicio de archivos
     if method == "GET" {
-        response, err = http.Get("http://10.0.2.4:5000/"+username+"/"+doc_id)
+        response, err = client.Get("https://lfile.duckdns.org:5000/"+username+"/"+doc_id)
         if err != nil {
             c.JSON(500, gin.H{"error": "could not connect to file service"})
             return
@@ -215,7 +223,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
     //peticion delete al servicio de archivos
     if method == "DELETE" {
-        req, err := http.NewRequest("DELETE", "http://10.0.2.4:5000/"+username+"/"+doc_id, nil)
+        req, err := http.NewRequest("DELETE", "https://lfile.duckdns.org:5000/"+username+"/"+doc_id, nil)
         if err != nil {
             c.JSON(500, gin.H{"error": err.Error()})
             return
@@ -237,7 +245,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
     //peticion get de los archivos de un usuario al servicio de archivos
     if method == "LIST" {
-        response, err = http.Get("http://10.0.2.4:5000/"+username)
+        response, err = client.Get("https://lfile.duckdns.org:5000/"+username)
         if err != nil {
             c.JSON(500, gin.H{"error": "could not connect to file service"})
             return
@@ -266,7 +274,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
     //peticion post al servicio de archivos
     if method == "POST" {
-        response, err = http.Post("http://10.0.2.4:5000/"+username+"/"+doc_id, "application/json", bytes.NewBuffer(jsonData))
+        response, err = client.Post("https://lfile.duckdns.org:5000/"+username+"/"+doc_id, "application/json", bytes.NewBuffer(jsonData))
         if err != nil {
             c.JSON(500, gin.H{"error": "could not connect to file service"})
             return
@@ -283,7 +291,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
     }
     //peticion put al servicio de archivos
     if method == "PUT" {
-        req, err := http.NewRequest("PUT", "http://10.0.2.4:5000/"+username+"/"+doc_id, bytes.NewBuffer(jsonData))
+        req, err := http.NewRequest("PUT", "https://lfile.duckdns.org:5000/"+username+"/"+doc_id, bytes.NewBuffer(jsonData))
         if err != nil {
             c.JSON(500, gin.H{"error": err.Error()})
             return

@@ -15,7 +15,7 @@ iptables -A FORWARD -p icmp -j ACCEPT
 
 iptables -A INPUT -s 10.0.1.2 -p tcp --dport 5000 -j ACCEPT
 iptables -A INPUT -s 10.0.2.3 -p tcp --dport 5000 -j ACCEPT
-iptables -A INPUT -s 10.0.2.4 -p tco --dport 5000 -j ACCEPT
+iptables -A INPUT -s 10.0.2.4 -p tcp --dport 5000 -j ACCEPT
 
 #http
 iptables -A INPUT -p tcp --dport 80 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
@@ -37,6 +37,9 @@ service rsyslog start
 
 ip route del default
 ip route add default via 10.0.1.2 dev eth0
+
+echo "10.0.2.3  lauth.duckdns.org" >> /etc/hosts
+echo "10.0.2.4  lfile.duckdns.org" >> /etc/hosts
 
 ./broker &
 
