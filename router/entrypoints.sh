@@ -22,6 +22,7 @@ iptables -A FORWARD -i eth0 -o eth1 -p tcp --syn --dport 22 -m state --state NEW
 iptables -A FORWARD -i eth0 -o eth1 -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A FORWARD -i eth1 -o eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT
 
+
 iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 22 -j DNAT --to-destination 10.0.1.3
 iptables -t nat -A POSTROUTING -o eth1 -p tcp --dport 22 -s 172.17.0.0/16 -d 10.0.1.3 -j SNAT --to-source 10.0.1.2
 iptables -t nat -A POSTROUTING -o eth3 -p tcp --dport 22 -s 172.17.0.0/16 -d 10.0.3.3 -j SNAT --to-source 10.0.3.2
