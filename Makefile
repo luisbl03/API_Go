@@ -32,18 +32,18 @@ clean:
 	docker rmi miubuntu miubuntu-broker miubuntu-auth miubuntu-file miubuntu-router miubuntu-work miubuntu-jump
 
 container: network 
-	docker run --privileged --rm  -ti -d --ip 10.0.1.4 --network dmz  --name broker --hostname broker miubuntu-broker
+	docker run --privileged --rm  -ti -d --ip 10.0.1.4 --network dmz --dns 8.8.8.8 --name broker --hostname broker miubuntu-broker
 
 	docker run --privileged --rm -ti -d \
-		--name auth --hostname auth --ip 10.0.2.3 --network srv miubuntu-auth
+		--name auth --dns 8.8.8.8 --hostname auth --ip 10.0.2.3 --network srv miubuntu-auth
 
 	docker run --privileged --rm -ti -d \
-		--name file --hostname file --ip 10.0.2.4 --network srv \
+		--name file --hostname file --dns 8.8.8.8 --ip 10.0.2.4 --network srv \
 		miubuntu-file
 	
-	docker run --privileged --rm -ti -d --name work --hostname work --network dev --ip 10.0.3.3 miubuntu-work
+	docker run --privileged --rm -ti -d --name work --dns 8.8.8.8 --hostname work --network dev --ip 10.0.3.3 miubuntu-work
 
-	docker run --privileged --rm -ti -d --name jump --hostname jump --network dmz --ip 10.0.1.3 miubuntu-jump
+	docker run --privileged --rm -ti -d --name jump --hostname jump --dns 8.8.8.8 --network dmz --ip 10.0.1.3 miubuntu-jump
 	
 	docker run --privileged --rm -ti -d --name router -p 5000:5000 --hostname router --dns 8.8.8.8 --dns 1.1.1.1  miubuntu-router
 	docker network connect dmz router
