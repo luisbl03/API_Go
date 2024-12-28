@@ -1,0 +1,8 @@
+[gin-login]
+enabled = true
+filter = gin-login
+logpath = /var/log/gin.log
+maxretry = 5
+bantime = 600
+findtime = 300
+action = iptables[name=gin-login, port=5000, protocol=tcp]

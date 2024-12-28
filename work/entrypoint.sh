@@ -7,8 +7,15 @@ iptables -P OUTPUT ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -p icmp -j ACCEPT
 
+#ssh
 iptables -A INPUT -p tcp --dport 22 -s 10.0.1.3 -j ACCEPT
 iptables -A INPUT -p tcp --sport 22 -s 10.0.3.0/24 -j ACCEPT
+
+#dns 
+iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+iptables -A INPUT -p udp --sport 53 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+iptables -A INPUT -p tcp --sport 53 -j ACCEPT
 
 ip route del default
 ip route add default via 10.0.3.2 dev eth0

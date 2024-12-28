@@ -25,6 +25,14 @@ iptables -A INPUT -j LOG --log-prefix "INPUT DROP: " --log-level 4
 iptables -A INPUT -p tcp --dport 22 -s 10.0.3.0/24 -j ACCEPT
 iptables -A INPUT -p tcp --sport 22 -s 10.0.3.0/24 -j ACCEPT
 
+#dns 
+iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+iptables -A INPUT -p udp --sport 53 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+iptables -A INPUT -p tcp --sport 53 -j ACCEPT
+
+
+
 
 service ssh start
 service rsyslog start

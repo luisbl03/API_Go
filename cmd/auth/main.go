@@ -27,7 +27,7 @@ func main() {
         log.Fatalf("Error iniciando el servidor HTTPS: %s", err)
     }
 
-	//api.Run(":80")
+	//api.Run(":5000")
 }
 
 //signup -> endpoint para registrar un usuario
@@ -69,7 +69,7 @@ func login(c *gin.Context) {
 	status := api.Login(user)
 	msg, code := Status(status)
 	if msg != "" {
-		c.JSON(code, gin.H{"error":msg})
+		c.JSON(code, gin.H{"error":msg, "clientIP":c.ClientIP()})
 		return
 	}
 	deleteToken(user.USERNAME) //reiniciamos sesion y asi evitamos conflictos con los tokens

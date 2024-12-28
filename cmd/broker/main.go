@@ -1,14 +1,18 @@
 package main
+
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
+	"io"
+	"log"
 	"net/http"
-    "log"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/luideoz/API_Go/api"
 	"github.com/luideoz/API_Go/config"
 	"github.com/luideoz/API_Go/models"
-    "io"
 )
 
 // Estrucutra para la respuesta del endpoint de listar archivos
@@ -17,6 +21,8 @@ type FileResponse struct {
 }
 func main() {
     config.Load("config/config.toml")
+    //configuracion del log para luego usar fail2ban
+
     api := gin.Default()
     api.GET("/version", version)
     api.POST("/signup", signup)
@@ -35,7 +41,7 @@ func main() {
         log.Fatalf("Error iniciando el servidor HTTPS: %s", err)
     }
 
-	//api.Run(":80")
+	//api.Run(":5000")
 }
 
 //version -> devuelve la version del broker
@@ -170,6 +176,21 @@ func AuthRequest(c *gin.Context, method string) {
     err = json.NewDecoder(response.Body).Decode(&data)
     if err != nil {
         c.JSON(500, gin.H{"error": "internal error, json decode"})
+        return
+    }
+    if response.StatusCode != 200 { 
+        file, err := os.OpenFile("/var/log/gin.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	    if err != nil {
+		    log.Fatalf("Failed to open log file: %s", err)
+    	}
+	    defer file.Close()
+        writer := bufio.NewWriter(file)
+        log.Printf("Login failes for IP: %s", data["clientIP"])
+        _,err = writer.WriteString("Login failes for IP: " + data["clientIP"] + "\n")
+        if err != nil {
+            log.Fatalf("Failed to write to log file: %s", err)
+        }
+        c.JSON(response.StatusCode,gin.H{ "error":data["error"]})
         return
     }
     c.JSON(response.StatusCode, data)

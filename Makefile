@@ -1,11 +1,16 @@
-.PHONY: build network container remove 
+.PHONY: images network container remove build clean run-tests
+
+build:
+	go build -o cmd/broker/broker cmd/broker/main.go
+	go build -o cmd/auth/auth cmd/auth/main.go
+	go build -o cmd/file/file cmd/file/main.go
 
 network:
 	docker network create --driver bridge --subnet 10.0.1.0/24 dmz
 	docker network create --driver bridge --subnet 10.0.2.0/24 srv
 	docker network create --driver bridge --subnet 10.0.3.0/24 dev
 
-build:
+images: build
 	docker build --rm -f Dockerfile --tag miubuntu .
 	docker build --rm -f cmd/broker/Dockerfile --tag miubuntu-broker cmd/broker
 	docker build --rm -f cmd/auth/Dockerfile --tag miubuntu-auth cmd/auth
@@ -16,19 +21,18 @@ build:
 
 remove:
 	docker stop broker auth file router work jump
-	docker rmi miubuntu
-	docker rmi miubuntu-broker
-	docker rmi miubuntu-auth
-	docker rmi miubuntu-file
-	docker rmi miubuntu-work
-	docker rmi miubuntu-router
-	docker rmi miubuntu-jump
 	docker network rm dmz
 	docker network rm srv
 	docker network rm dev
 
-container: network build
-	docker run --privileged --rm -ti -d --ip 10.0.1.4 --network dmz --name broker --hostname broker miubuntu-broker
+clean:
+	rm -f cmd/broker/broker
+	rm -f cmd/auth/auth
+	rm -f cmd/file/file
+	docker rmi miubuntu miubuntu-broker miubuntu-auth miubuntu-file miubuntu-router miubuntu-work miubuntu-jump
+
+container: network 
+	docker run --privileged --rm  -ti -d --ip 10.0.1.4 --network dmz  --name broker --hostname broker miubuntu-broker
 
 	docker run --privileged --rm -ti -d \
 		--name auth --hostname auth --ip 10.0.2.3 --network srv miubuntu-auth
@@ -41,7 +45,7 @@ container: network build
 
 	docker run --privileged --rm -ti -d --name jump --hostname jump --network dmz --ip 10.0.1.3 miubuntu-jump
 	
-	docker run --privileged --rm -ti -d --name router --hostname router miubuntu-router
+	docker run --privileged --rm -ti -d --name router -p 5000:5000 --hostname router --dns 8.8.8.8 --dns 1.1.1.1  miubuntu-router
 	docker network connect dmz router
 	docker network connect srv router
 	docker network connect dev router
