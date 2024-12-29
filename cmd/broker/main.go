@@ -301,6 +301,16 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
             return
         }
         defer response.Body.Close()
+        if response.StatusCode != 201 {
+            var data map[string]string
+            err = json.NewDecoder(response.Body).Decode(&data)
+            if err != nil {
+                c.JSON(500, gin.H{"error": err.Error()})
+                return
+            }
+            c.JSON(response.StatusCode, data)
+            return
+        }
         var data map[string]int
         err = json.NewDecoder(response.Body).Decode(&data)
         if err != nil {
@@ -325,6 +335,16 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
             return
         }
         defer response.Body.Close()
+        if response.StatusCode != 200 {
+            var data map[string]string
+            err = json.NewDecoder(response.Body).Decode(&data)
+            if err != nil {
+                c.JSON(500, gin.H{"error": err.Error()})
+                return
+            }
+            c.JSON(response.StatusCode, data)
+            return
+        }   
         var data map[string]int
         err = json.NewDecoder(response.Body).Decode(&data)
         if err != nil {
@@ -332,5 +352,7 @@ func FileRequest(c *gin.Context, method string)  { //username, doc_id, token
             return
         }
         c.JSON(response.StatusCode, data)
+        return
+
     }
 }
