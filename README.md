@@ -1,65 +1,67 @@
-# PRACTICA 3
-## 1. PUESTA EN MARCHA: DEFINICION DEL FRAMEWORK A UTILIZAR Y CREACION DE LA ESTRUCTURA DEL PROYECTO
-### 1.1. DEFINICION DEL FRAMEWORK A UTILIZAR
+# PRACTICA 4 LUIS BENITO LÓPEZ
 
-Para la realización de la Api que se pide para la practica 3, en el lenguaje Go, se ha optado por usar Gin, que tiene una interfaz amigable y fácil de usar.
+## Explicación del proyecto
 
-### 1.2. ESTRUCTURA DEL PROYECTO
-El proyecto se ha estructurado de la siguiente manera:
-- api -> contiene el codigo de las funciones de la api
-- cmd -> contiene el codigo de la aplicacion principal
-- database -> contiene la base de datos
-- models -> contiene los modelos de la base de datos
-- repository -> contiene el codigo de las funciones de la base de datos
+La practica consiste en el despliegue de un servicio web en Docker, este servicio web se encuentra dividio en 3 partes:
 
-### 1.3. CREACION DE LA BASE DE DATOS
-Para la peersistencia usada en este proyecto se ha decidido usar JSON. Se han creado dos JSON, uno para guardar los usuarios y otro para guardar los archivos. En el config.toml de la carpeta config se especifica el directorio donde se guardaran los JSON.por defecto esta en database.
+- lbroker.duckdns.org: que se encarga de recibir todas las peticiones que lleguen, procesarlas y redirigirlas a una de las otras dos partes. 
+- lauth.duckdns.org: se encarga de la autenticacion y registro de los usuarios, ademas de la generacion y validacion de tokens de acceso.
+- lfile.duckdns.org: se encarga de la subida, descarga, actualizacio, borrado y listado de archivos.
 
-## 2. EXPLICACION DE LA API
-### 2.1 paquete repository
-#### 2.1.1. user_json.go
-En este archivo encontramos las funciones que se encargan de guardar los usuarios en la persistencia, ademas de las funciones que se encargan de obtener los usuarios de la persistencia.
-#### 2.1.2. json_json.go
-Ese archivo tiene las funciones de crear los archivos json, obtenerlos, actualizarlos, borrarlos y listar los archivos de un usuario
+Aparte de los servicios explicados, encontramos dos nodos mas, uno jump y otro work, estos tienen la finalidad de conectarse a la red de los servicios por ssh. La maquina jump sirve para hacer de intermediaria entre el usuario y la maquina work, ya que se tienen que conectar primero a work. Encontramos dos usuarios, dev y op. op tiene acceso a todas las maquinas por ssh mientras que dev solo a work.
 
-### 2.2 paquete models
-#### 2.2.1. user.go
-Tenemos la estructura de un usuario, que contiene un nombre de usuario y su contraseña
-#### 2.2.2. json.go
-La estrcutra json solo cuenta con el contenido del archivo
-#### 2.2.3. token.go
-Esta es la estrcutura del token, cuenta con un codigo, el usuario al que pertenece y su tiempo de expiracion
-#### 2.2.4 File.go
-Aqui se define la estructura del archivo, que cuenta con su id y el json
+## Instalación
 
-### 2.3 paquete constants
-En este paquete definimos las constantes que se usan en el proyecto
+### Despliegue de los servicios
+En el proyecto, encontramos un Makefile que nos facilita la instalacion y despliegue de los servicios. Para la compilacion de los servicios y la creacion de las imagenes docker, ejecutamos el siguiente comando:
 
-### 2.4. paquete api
-En este paquete tenemos las funciones que definen la capa de negocio de la aplicacion
-#### 2.4.1. authentication.go
-En este archivo encontramos las funciones que se encargan de la autenticacion de los usuarios
-#### 2.4.2. json_storage.go
-En este archivo encontramos las funciones que se encargan de la persistencia de los archivos
-
-### 2.5. paquete cmd
-Encontramos el main, aqui se define la api y los distintos endpoints
-
-## 3. EJECUCION
-Para ejecutar la api, se ejecuta el siguiente comando:
 ```bash
-go run cmd/main.go
+make images
 ```
-## 4. TESTING
-Se han realizado test a dos niveles, a nivel de http y a nivel de https:
-### 4.1. Test de http
-Para estos test se ha usado pytest, por ello se ha creado un entorno virtual con el siguiente comando:
+
+Para la creacion de las redes y el despliegue de los servicios, ejecutamos el siguiente comando:
+
 ```bash
-python3 -m venv .venv
+make container
 ```
-Luego se instala con pip las librerias pytest y requests. Y ejecutamos el comando:
+Para que el la resolucion del dominio de broker funcione bien, es necesario añadir la siguiente linea al archivo /etc/hosts:
+
 ```bash
-pytest test/test_http.py
+172.17.0.2 lbroker.duckdns.org
 ```
-### 4.2. Test de https
-Lo que hemos usado esta vez, es la extension de visual studio code thunder client, se han definido una operacion por cada endpoint y se puede ir cambiando cabeceras y body para ver como se comporta la api. Para usarlos, se tiene que tener instalada la extension e importar el archuvo json que se encuentra en la carpeta test.
+Para la deetencion de los servicios y la eliminacion de las redes, ejecutamos el siguiente comando:
+
+```bash
+make remove
+```
+Para el borrado de los binarios y de las imagenes, ejecutamos el siguiente comando:
+
+```bash
+make clean
+```
+### Instalacion del ssh
+Para el ssh, he configurado un archivo de hosts para acceder a las maquinas de manera mas sencilla:
+
+```bash
+sudo cp assets/config ~/.ssh/config
+```
+El archivo consiste en la definicion de los hosts y la clave para entrar, para ello es necesario tener las claves que estan en la carpeta keys en la carpeta .ssh
+
+
+
+## Ejecucion de los test
+Para ejecutar los test, es necesario crear un entorno virtual de python e instalar las librerias necesarias:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+Una vez instaladas, en el Makefile existe una regla para ejecutarlos, es necesario tener el entorno virtual activado:
+
+```bash
+make run_test
+```
+
+Estos test sirven para probar la api en funcionamiento

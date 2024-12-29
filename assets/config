@@ -1,0 +1,26 @@
+Host jetson
+	hostname 192.168.55.1
+	user jetson
+	ForwardX11 yes
+
+Host dev-jump
+	hostname 172.17.0.2
+	user jump
+	IdentityFile ~/.ssh/dev_key
+
+Host op-jump
+	hostname 172.17.0.2
+	user jump
+	IdentityFile ~/.ssh/op_key
+
+Host dev-work
+	hostname 10.0.3.3
+	user dev
+	ProxyJump dev-jump
+	IdentityFile ~/.ssh/dev_key
+
+Host op-work
+	hostname 10.0.3.3
+	user op
+	ProxyJump op-jump
+	IdentityFile ~/.ssh/op_key

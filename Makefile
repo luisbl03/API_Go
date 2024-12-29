@@ -49,3 +49,6 @@ container: network
 	docker network connect dmz router
 	docker network connect srv router
 	docker network connect dev router
+
+run-tests:
+	pytest test_https.py
